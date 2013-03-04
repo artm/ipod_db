@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    bindata (1.4.5)
     coderay (1.0.9)
     ffi (1.4.0)
     guard (1.6.2)
@@ -37,6 +38,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bindata
   guard
   guard-bundler
   guard-minitest

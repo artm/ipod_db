@@ -1,7 +1,8 @@
 source "https://rubygems.org"
 
-gem 'purdytest'
+gem 'bindata'
 
+gem 'purdytest'
 gem 'guard'
 gem 'guard-minitest'
 gem 'guard-bundler'
