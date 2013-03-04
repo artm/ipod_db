@@ -22,10 +22,52 @@ class EncodedString < BinData::Primitive
   end
 end
 
+class BinData::Struct
+  def to_hash
+    h = {}
+    each_pair do |key,val|
+      h[key] = val
+    end
+    h
+  end
+end
+
 class IpodDB
-  attr_reader :playback_state, :tracks
+
+  class NotAnIpod < RuntimeError
+    def initialize path
+      super "#{path} doesn't appear to be an iPod"
+    end
+  end
+
   def initialize root_dir
-    @root_dir
+    @root_dir = root_dir
+    begin
+      read
+    rescue Errno::ENOENT
+      raise NotAnIpod.new @root_dir
+    end
+  end
+
+  def read
+    playback_state = PState.read control_file('PState')
+    stats = Stats.read control_file('Stats')
+    sd = SD.read control_file('SD')
+    @playback_state = playback_state.to_hash
+    @tracks = {}
+    stats.records.each_with_index do |stat,i|
+      h = stat.to_hash.merge( sd.records[i].to_hash )
+      h.delete :reclen
+      if playback_state.trackno == i
+        h[:current] = true
+        h[:current_pos] = playback_state.trackpos
+      end
+      @tracks[ h[:filename] ] = h
+    end
+  end
+
+  def control_file suffix
+    File.open "#{@root_dir}/iPod_Control/iTunes/iTunes#{suffix}"
   end
 
   class PState < BinData::Record
