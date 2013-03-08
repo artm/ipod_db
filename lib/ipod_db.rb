@@ -1,8 +1,10 @@
 require 'bindata'
 require 'bindata/itypes'
 require 'bindata/to_hash'
+require 'map'
 
 class IpodDB
+  attr_reader :current_filename
   class NotAnIpod < RuntimeError
     def initialize path
       super "#{path} doesn't appear to be an iPod"
@@ -22,17 +24,43 @@ class IpodDB
     playback_state = PState.read control_file('PState')
     stats = Stats.read control_file('Stats')
     sd = SD.read control_file('SD')
-    @playback_state = playback_state.to_hash
-    @tracks = {}
+    @current_filename = sd.records[ playback_state.trackno ].filename
+    @tracks = Map.new
     stats.records.each_with_index do |stat,i|
       h = stat.to_hash.merge( sd.records[i].to_hash )
       h.delete :reclen
-      if playback_state.trackno == i
-        h[:current] = true
-        h[:current_pos] = playback_state.trackpos
-      end
-      @tracks[ h[:filename] ] = h
+      @tracks.set h[:filename], h
     end
+  end
+
+  def include? track ; @tracks.keys.include? track ; end
+
+  def update *args
+    opts = Map.options(args)
+    new_books = opts.getopt :books, default: []
+    new_songs = opts.getopt :songs, default: []
+    new_tracks = new_books + new_songs
+
+    old_tracks = @tracks.keys.clone # clone because otherwise it'll change during iteration
+    old_tracks.each do |filename|
+      @tracks.delete filename unless new_tracks.include? filename
+    end
+    new_books.each do |filename|
+      @tracks.set filename, :filename, filename
+      @tracks[filename].update shuffleflag: false, bookmarkflag: true
+    end
+    new_songs.each do |filename|
+      @tracks.set filename, :filename, filename
+      @tracks[filename].update shuffleflag: true, bookmarkflag: false
+    end
+  end
+
+  def [] filename
+    @tracks[filename]
+  end
+
+  def inspect
+    "<IpodDB>"
   end
 
   def control_file suffix
