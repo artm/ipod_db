@@ -1,6 +1,7 @@
 source "https://rubygems.org"
 
 gem 'bindata'
+gem 'map'
 
 gem 'purdytest'
 gem 'guard'

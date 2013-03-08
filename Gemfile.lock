@@ -19,6 +19,7 @@ GEM
       ffi (>= 1.0.11)
     listen (0.7.3)
     lumberjack (1.0.2)
+    map (6.3.0)
     method_source (0.8.1)
     minitest (2.12.1)
     pry (0.9.12)
@@ -43,6 +44,7 @@ DEPENDENCIES
   guard-bundler
   guard-minitest
   libnotify
+  map
   purdytest
   rb-fsevent
   rb-inotify
