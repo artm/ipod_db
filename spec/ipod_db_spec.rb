@@ -11,6 +11,7 @@ describe IpodDB do
     # just in case
     FileUtils::rm_rf(@ipod_root)
     FileUtils::cp_r 'test_data', @ipod_root, remove_destination: true
+    FileUtils::chmod_R "u=rwX", @ipod_root
   end
 
   after { FileUtils::rm_rf(@ipod_root) }
