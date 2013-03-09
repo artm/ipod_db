@@ -173,7 +173,7 @@ class IpodDB
       uint24 :stoptime
       string length: 6
       uint24 :volume, initial_value: 100
-      uint24 :file_type, value: lambda { ExtToFileType[Pathname.new(filename).extname] }
+      uint24 :file_type, value: lambda { ExtToFileType[File.extname(filename)] }
       string length: 3
       encoded_string :filename, length: 522
       bool8 :shuffleflag

@@ -11,24 +11,20 @@ $LOAD_PATH << File.dirname(__FILE__) + '/lib'
 require 'ipod_db'
 
 Main {
-  argument('ipod_root') { default './device' }
-  option('books') { default '/books' }
-  option('songs') { default '/songs' }
+  argument('ipod_root') { default "/media/#{ENV['USER']}/IPOD" }
+  option('books') { default 'books' }
+  option('songs') { default 'songs' }
 
   def run
     ipod_root = params['ipod_root'].value
     ipod_db = IpodDB.new ipod_root
-    books_path = make_path ipod_root, params['books'].value
-    songs_path = make_path ipod_root, params['songs'].value
+    books_path = File.join ipod_root, params['books'].value
+    songs_path = File.join ipod_root, params['songs'].value
     books = collect_tracks(books_path, ipod_root)
     songs = collect_tracks(songs_path, ipod_root)
     ipod_db.update books: books, songs: songs
     ipod_db.save
     exit_success!
-  end
-
-  def make_path *args
-    args.map{|a|a.split'/'}.flatten.join('/')
   end
 
   def collect_tracks path, root
@@ -44,8 +40,7 @@ Main {
   end
 
   def ipod_path path, root
-    root = Pathname.new(root)
-    '/' + Pathname.new(path).relative_path_from(root).to_s
+    '/' + Pathname.new(path).relative_path_from(Pathname.new root).to_s
   end
 
   def track? path
