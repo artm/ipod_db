@@ -45,6 +45,10 @@ class IpodDB
     end
   end
 
+  def IpodDB.looks_like_ipod? path
+    Dir.exists? File.join(path,'iPod_Control','iTunes')
+  end
+
   def read
     @playback_state = read_records PState, 'PState'
     stats = read_records Stats, 'Stats'
