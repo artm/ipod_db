@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'bindata'
 require 'bindata/itypes'
-require 'bindata/to_hash'
 require 'map'
 require 'pathname'
 
