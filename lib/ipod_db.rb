@@ -28,6 +28,9 @@ class IpodDB
       read
     rescue Errno::ENOENT
       raise NotAnIpod.new @root_dir
+    rescue IOError => error
+      puts "Corrupt database, creating a-new"
+      init_db
     end
   end
 
@@ -43,6 +46,13 @@ class IpodDB
       h.delete :reclen
       @tracks[ h[:filename].to_s ] = h
     end
+  end
+
+  def init_db
+    @playback_state = PState.new
+    @current_filename = nil
+    @current_pos = 0
+    @tracks = Map.new
   end
 
   def read_records bindata, file_suffix
@@ -75,8 +85,8 @@ class IpodDB
 
   def save
     unless @tracks.include? @current_filename
-      @playback_state.trackno = 0
-      @playback_state.trackpos = 0
+      @playback_state.trackno = -1
+      @playback_state.trackpos = -1
     end
     stats = Stats.new
     sd = SD.new
@@ -88,6 +98,9 @@ class IpodDB
     write_records @playback_state, 'PState'
     write_records stats, 'Stats'
     write_records sd, 'SD'
+
+    shuffle = make_filename('Shuffle')
+    File.delete shuffle if File.exists? shuffle
   end
 
   def write_records bindata, file_suffix
@@ -116,9 +129,9 @@ class IpodDB
     endian :little
     uint8 :volume, initial_value: 29
     uint24 :shufflepos
-    uint24 :trackno
+    uint24 :trackno, default: -1
     bool24 :shuffleflag
-    uint24 :trackpos
+    uint24 :trackpos, default: -1
     string length: 19
   end
 
