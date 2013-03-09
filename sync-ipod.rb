@@ -1,19 +1,40 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'bundler/setup'
-
-require 'main'
-require 'find'
-require 'pathname'
-
-$LOAD_PATH << File.dirname(__FILE__) + '/lib'
-require 'ipod_db'
-
 Main {
-  argument('ipod_root') { default "/media/#{ENV['USER']}/IPOD" }
-  option('books') { default 'books' }
-  option('songs') { default 'songs' }
+  version '0.1.0'
+
+  description <<-__
+  Update iPod Shuffle (2nd gen) database. Given directories of bookmarkable
+  and non-bookmarkable media #{program} will find all supported tracks and
+  add them to the iPod database so the device is aware of their existance.
+
+  It is perfectly possible to have other directories full of tracks in device's
+  subconscious - e.g. when time-sharing the device among members of a poor
+  family. Just make sure you update the database using your directories when
+  receiving it from a relation.
+
+  iPod remembers playback position on bookmarkable media and the #{program} goes
+  out of its way to preserve the bookmarks. It also removes bookmarkable files
+  from shuffle list.
+  __
+
+  author 'artm <femistofel@gmail.com>'
+
+  argument('ipod_root') {
+    default "/media/#{ENV['USER']}/IPOD"
+    validate {|path| IpodDB.looks_like_ipod? path}
+    description 'path where ipod is mounted'
+  }
+  option('books','b') {
+    argument_required
+    default 'books'
+    description 'subdirectory of ipod with bookmarkable media'
+  }
+  option('songs','s') {
+    argument_required
+    default 'songs'
+    description 'subdirectory of ipod with non-bookmarkable media'
+  }
 
   def run
     ipod_root = params['ipod_root'].value
@@ -46,4 +67,17 @@ Main {
   def track? path
     IpodDB::ExtToFileType.include? File.extname(path)
   end
+}
+
+BEGIN {
+  require 'rubygems'
+  require 'bundler/setup'
+
+  require 'main'
+  require 'find'
+  require 'pathname'
+
+  $LOAD_PATH << File.dirname(__FILE__) + '/lib'
+  require 'ipod_db'
+
 }
