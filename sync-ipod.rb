@@ -56,7 +56,7 @@ Main {
     '/' + Pathname.new(path).relative_path_from(root).to_s
   end
 
-  TrackExtensions = [ 'mp3', 'm4a', 'm4b' ]
+  TrackExtensions = [ 'mp3', 'm4a', 'm4b', 'm4p', 'aa', 'wav' ]
   def track? path
     TrackExtensions.include? File.extname(path).sub(/^\./,'')
   end

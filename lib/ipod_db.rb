@@ -3,6 +3,7 @@ require 'bindata'
 require 'bindata/itypes'
 require 'bindata/to_hash'
 require 'map'
+require 'pathname'
 
 class Hash
   def subset *args
@@ -162,7 +163,16 @@ class IpodDB
       uint24 :stoptime
       string length: 6
       uint24 :volume, initial_value: 100
-      uint24 :file_type
+      uint24 :file_type, value: lambda {
+        case Pathname.new(filename).extname
+        when '.mp3', '.aa'
+          1
+        when '.m4a', '.m4b', '.m4p'
+          2
+        when '.wav'
+          4
+        end
+      }
       string length: 3
       encoded_string :filename, length: 522
       bool8 :shuffleflag
