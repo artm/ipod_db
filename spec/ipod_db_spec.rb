@@ -1,69 +1,70 @@
 # encoding: UTF-8
 require 'spec_helper'
 require 'ipod_db'
-
 require 'fileutils'
 
 describe IpodDB do
   before do
-    @expected = eval( File.open( "test_data.rb" ).read )
+    @expected = Map.new eval( File.open( "test_data.rb" ).read )
     @ipod_root = 'mock_root'
+    @itunes_prefix = "#{@ipod_root}/iPod_Control/iTunes/iTunes"
     # just in case
     FileUtils::rm_rf(@ipod_root)
     FileUtils::cp_r 'test_data', @ipod_root, remove_destination: true
   end
 
-  after do
-    FileUtils::rm_rf(@ipod_root)
+  after { FileUtils::rm_rf(@ipod_root) }
+
+  def read_struct struct_name, suffix=''
+    File.open "#{@itunes_prefix}#{struct_name}#{suffix}" do |io|
+      IpodDB.const_get(struct_name).read(io)
+    end
+  end
+  def write_struct struct_name, struct, suffix=''
+    File.open "#{@itunes_prefix}#{struct_name}#{suffix}", 'w' do |io|
+      struct.write(io)
+    end
   end
 
   describe IpodDB::PState do
     it 'parses pstate file' do
-      File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState" ) do |file|
-        pstate = IpodDB::PState.read(file)
-        pstate.to_hash.must_be :==, @expected[:pstate]
-      end
+      read_struct(:PState).snapshot.must_be :==, @expected[:pstate]
     end
     it 'writes pstate file' do
-      pstate = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState" ) do |file|
-        IpodDB::PState.read(file)
-      end
-      File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState_test", 'w' ) do |file|
-        pstate.write(file)
-      end
-      test_pstate = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState_test" ) do |file|
-        IpodDB::PState.read(file)
-      end
-      test_pstate.must_equal pstate
+      pstate = read_struct :PState
+      write_struct :PState, pstate, '_test'
+      pstate_test = read_struct :PState, '_test'
+      pstate_test.must_equal pstate
     end
   end
 
   describe IpodDB::Stats do
     it 'parses stats file' do
-      file = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesStats" )
-      stats = IpodDB::Stats.read(file)
+      stats = read_struct :Stats
       stats.record_count.must_equal @expected[:tracks].count
       stats.records.count.must_equal @expected[:tracks].count
-      @expected[:tracks].each_with_index do |track,i|
-        [:bookmarktime, :playcount, :skippedcount].each do |field|
-          stats.records[i].send(field).value.must_equal track[field]
-        end
-      end
+      stats.records.must_have_records_like @expected[:tracks]
+    end
+    it 'writes stats file' do
+      stats = read_struct :Stats
+      write_struct :Stats, stats, '_test'
+      stats_test = read_struct :Stats, '_test'
+      stats_test.must_equal stats
     end
   end
 
   describe IpodDB::SD do
     it 'parses tracks file' do
-      file = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesSD" )
-      tracks = IpodDB::SD.read(file)
-      tracks.record_count.must_equal @expected[:tracks].count
-      tracks.records.count.must_equal @expected[:tracks].count
-      @expected[:tracks].each_with_index do |track,i|
-        [:starttime,:stoptime,:volume,:file_type,:shuffleflag,
-         :bookmarkflag, :filename].each do |field|
-          tracks.records[i].send(field).value.must_equal track[field]
-        end
-      end
+      sd = read_struct :SD
+      sd.record_count.must_equal @expected[:tracks].count
+      sd.records.count.must_equal @expected[:tracks].count
+      sd.records.must_have_records_like @expected[:tracks]
+    end
+    it 'writes sd file' do
+      sd = read_struct :SD
+      write_struct :SD, sd, '_test'
+      sd_test = read_struct :SD, '_test'
+      sd_test.must_equal sd
     end
   end
 
@@ -118,8 +119,7 @@ describe IpodDB do
         end
       end
     end
-
-    it 'writes db down properly' do
+    it 'writes the whole db' do
       # When I ...
       ipod_db = IpodDB.new @ipod_root
       ipod_db.update books: @new_books, songs: @new_songs

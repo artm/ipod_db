@@ -39,7 +39,7 @@ class IpodDB
     @current_pos = @playback_state.trackpos
     @tracks = Map.new
     stats.records.each_with_index do |stat,i|
-      h = stat.to_hash.merge( sd.records[i].to_hash )
+      h = stat.snapshot.merge( sd.records[i].snapshot )
       h.delete :reclen
       @tracks[ h[:filename].to_s ] = h
     end
