@@ -152,7 +152,7 @@ class IpodDB
     endian :big
     uint24 :record_count, value: lambda { records.count }
     uint24 :const, value: 0x10800
-    uint24 :reclen, value: lambda { num_bytes }
+    uint24 :reclen, value: lambda { num_bytes - records.num_bytes }
     string length: 9
     array :records, initial_length: :record_count do
       uint24 :reclen, value: lambda { num_bytes }
