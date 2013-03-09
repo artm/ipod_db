@@ -17,6 +17,16 @@ end
 
 class IpodDB
   attr_reader :current_filename, :playback_state
+
+  ExtToFileType = {
+    '.mp3' => 1,
+    '.aa' => 1,
+    '.m4a' => 2,
+    '.m4b' => 2,
+    '.m4p' => 2,
+    '.wav' => 4
+  }
+
   class NotAnIpod < RuntimeError
     def initialize path
       super "#{path} doesn't appear to be an iPod"
@@ -163,16 +173,7 @@ class IpodDB
       uint24 :stoptime
       string length: 6
       uint24 :volume, initial_value: 100
-      uint24 :file_type, value: lambda {
-        case Pathname.new(filename).extname
-        when '.mp3', '.aa'
-          1
-        when '.m4a', '.m4b', '.m4p'
-          2
-        when '.wav'
-          4
-        end
-      }
+      uint24 :file_type, value: lambda { ExtToFileType[Pathname.new(filename).extname] }
       string length: 3
       encoded_string :filename, length: 522
       bool8 :shuffleflag
