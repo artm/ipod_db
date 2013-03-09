@@ -1,10 +1,21 @@
+# encoding: UTF-8
 require 'bindata'
 require 'bindata/itypes'
 require 'bindata/to_hash'
 require 'map'
 
+class Hash
+  def subset *args
+    subset = {}
+    args.each do |arg|
+      subset[arg] = self[arg] if self.include? arg
+    end
+    subset
+  end
+end
+
 class IpodDB
-  attr_reader :current_filename
+  attr_reader :current_filename, :playback_state
   class NotAnIpod < RuntimeError
     def initialize path
       super "#{path} doesn't appear to be an iPod"
@@ -21,19 +32,26 @@ class IpodDB
   end
 
   def read
-    playback_state = PState.read control_file('PState')
-    stats = Stats.read control_file('Stats')
-    sd = SD.read control_file('SD')
-    @current_filename = sd.records[ playback_state.trackno ].filename
+    @playback_state = read_records PState, 'PState'
+    stats = read_records Stats, 'Stats'
+    sd = read_records SD, 'SD'
+    @current_filename = sd.records[ @playback_state.trackno ].filename
+    @current_pos = @playback_state.trackpos
     @tracks = Map.new
     stats.records.each_with_index do |stat,i|
       h = stat.to_hash.merge( sd.records[i].to_hash )
       h.delete :reclen
-      @tracks.set h[:filename], h
+      @tracks[ h[:filename].to_s ] = h
     end
   end
 
-  def include? track ; @tracks.keys.include? track ; end
+  def read_records bindata, file_suffix
+    File.open make_filename(file_suffix) do |io|
+      bindata.read io
+    end
+  end
+
+  def include? track ; @tracks.include? track ; end
 
   def update *args
     opts = Map.options(args)
@@ -46,13 +64,40 @@ class IpodDB
       @tracks.delete filename unless new_tracks.include? filename
     end
     new_books.each do |filename|
-      @tracks.set filename, :filename, filename
-      @tracks[filename].update shuffleflag: false, bookmarkflag: true
+      @tracks[filename] ||= {:filename => filename}
+      @tracks[filename].merge! shuffleflag: false, bookmarkflag: true
     end
     new_songs.each do |filename|
-      @tracks.set filename, :filename, filename
-      @tracks[filename].update shuffleflag: true, bookmarkflag: false
+      @tracks[filename] ||= {:filename => filename}
+      @tracks[filename].merge! shuffleflag: true, bookmarkflag: false
     end
+  end
+
+  def save
+    unless @tracks.include? @current_filename
+      @playback_state.trackno = 0
+      @playback_state.trackpos = 0
+    end
+    stats = Stats.new
+    sd = SD.new
+    @tracks.each_value do |track|
+      stats.records << track.subset(:bookmarktime, :playcount, :skippedcount)
+      sd.records << track.subset(:starttime, :stoptime, :volume, :file_type, :filename,
+                                  :shuffleflag, :bookmarkflag)
+    end
+    write_records @playback_state, 'PState'
+    write_records stats, 'Stats'
+    write_records sd, 'SD'
+  end
+
+  def write_records bindata, file_suffix
+    File.open( make_filename(file_suffix), 'w' ) do |io|
+      bindata.write io
+    end
+  end
+
+  def each_track
+    @tracks.each_value {|track| yield track}
   end
 
   def [] filename
@@ -63,8 +108,8 @@ class IpodDB
     "<IpodDB>"
   end
 
-  def control_file suffix
-    File.open "#{@root_dir}/iPod_Control/iTunes/iTunes#{suffix}"
+  def make_filename suffix
+    "#{@root_dir}/iPod_Control/iTunes/iTunes#{suffix}"
   end
 
   class PState < BinData::Record

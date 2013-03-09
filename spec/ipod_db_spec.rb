@@ -19,9 +19,22 @@ describe IpodDB do
 
   describe IpodDB::PState do
     it 'parses pstate file' do
-      file = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState" )
-      pstate = IpodDB::PState.read(file)
-      pstate.to_hash.must_be :==, @expected[:pstate]
+      File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState" ) do |file|
+        pstate = IpodDB::PState.read(file)
+        pstate.to_hash.must_be :==, @expected[:pstate]
+      end
+    end
+    it 'writes pstate file' do
+      pstate = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState" ) do |file|
+        IpodDB::PState.read(file)
+      end
+      File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState_test", 'w' ) do |file|
+        pstate.write(file)
+      end
+      test_pstate = File.open( "#{@ipod_root}/iPod_Control/iTunes/iTunesPState_test" ) do |file|
+        IpodDB::PState.read(file)
+      end
+      test_pstate.must_equal pstate
     end
   end
 
@@ -63,30 +76,63 @@ describe IpodDB do
     ipod_db.current_filename.must_equal current_filename
   end
 
-  it 'updates tracklist in memory give new tracks' do
-    # Given ...
-    old_filenames = @expected[:tracks].map{|t| t[:filename]}
-    one_third = old_filenames.count / 3
-    new_books = old_filenames[0...one_third]
-    new_songs = old_filenames[one_third...2*one_third]
-    removed = old_filenames[2*one_third..-1]
-    new_books << '/another_book.mp3'
-    new_songs << '/another_song.mp3'
-
-    # When I ...
-    ipod_db = IpodDB.new @ipod_root
-    ipod_db.update books: new_books, songs: new_songs
-
-    # Then ...
-    ipod_db.must_include_none_of removed
-    new_books.each do |filename|
-      assert !ipod_db[filename][:shuffleflag]
-      assert ipod_db[filename][:bookmarkflag]
+  describe 'update' do
+    before do
+      # Given ...
+      old_filenames = @expected[:tracks].map{|t| t[:filename]}
+      @expected_hash = Hash[old_filenames.zip @expected[:tracks]]
+      one_third = old_filenames.count / 3
+      @new_books = old_filenames[0...one_third]
+      @new_songs = old_filenames[one_third...2*one_third]
+      @removed = old_filenames[2*one_third..-1]
+      @new_books << '/another_book.mp3'
+      @new_songs << '/another_song.mp3'
     end
-    new_songs.each do |filename|
-      assert ipod_db[filename][:shuffleflag]
-      assert !ipod_db[filename][:bookmarkflag]
+    it 'updates tracklist in memory given new tracks' do
+      # When I ...
+      ipod_db = IpodDB.new @ipod_root
+      ipod_db.update books: @new_books, songs: @new_songs
+
+      # Then ...
+      ipod_db.must_include_none_of @removed
+      @new_books.each do |filename|
+        actual = ipod_db[filename]
+        assert !actual[:shuffleflag]
+        assert actual[:bookmarkflag]
+        if @expected_hash.include? filename
+          rest = @expected_hash[filename].clone
+          rest.delete :shuffleflag
+          rest.delete :bookmarkflag
+          rest.must_be_subset_of actual
+        end
+      end
+      @new_songs.each do |filename|
+        actual = ipod_db[filename]
+        assert actual[:shuffleflag]
+        assert !actual[:bookmarkflag]
+        if @expected_hash.include? filename
+          rest = @expected_hash[filename].clone
+          rest.delete :shuffleflag
+          rest.delete :bookmarkflag
+          rest.must_be_subset_of actual
+        end
+      end
+    end
+
+    it 'writes db down properly' do
+      # When I ...
+      ipod_db = IpodDB.new @ipod_root
+      ipod_db.update books: @new_books, songs: @new_songs
+      ipod_db.save
+
+      test_db = IpodDB.new @ipod_root
+      test_db.each_track do |track|
+        ipod_db[track[:filename]].must_be_subset_of track
+      end
+      ipod_db.each_track do |track|
+        track.must_be_subset_of test_db[track[:filename]]
+      end
+      ipod_db.playback_state.must_equal test_db.playback_state
     end
   end
-
 end
