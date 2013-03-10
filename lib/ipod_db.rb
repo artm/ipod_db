@@ -127,6 +127,10 @@ class IpodDB
     @tracks.each_value {|track| yield track}
   end
 
+  def each_track_with_index
+    @tracks.each_with_index {|path_track,i| yield path_track[1], i}
+  end
+
   def [] filename
     @tracks[filename]
   end

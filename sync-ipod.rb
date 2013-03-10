@@ -48,6 +48,38 @@ Main {
     exit_success!
   end
 
+  mode('ls') {
+    def run
+      @ipod_root = params['ipod_root'].value
+      @ipod_db = IpodDB.new @ipod_root
+      @ipod_db.each_track_with_index {|track,i| list_track i, track}
+    end
+
+    def track_info track
+      info = Map.new
+      info['played'] = track.playcount if track.playcount > 0
+      info['skipped'] = track.skippedcount if track.skippedcount > 0
+      if track.bookmarkflag && track.bookmarktime > 0
+        info['pos'] = Pretty.seconds(track.bookmarktime / 4)
+      end
+      info
+    end
+
+    def list_track i, track
+      abs_path = File.join @ipod_root, track.filename
+      track_color = File.exists?(abs_path) ? :green : :red
+
+      listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
+      listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
+      puts listing_entry
+
+      info = track_info(track)
+      if info.count > 0
+        puts "  " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
+      end
+    end
+  }
+
   def collect_tracks path, root
     begin
       tracks = []
@@ -76,8 +108,11 @@ BEGIN {
   require 'main'
   require 'find'
   require 'pathname'
+  require 'smart_colored/extend'
+  require 'map'
 
   $LOAD_PATH << File.dirname(__FILE__) + '/lib'
   require 'ipod_db'
+  require 'pretty'
 
 }
