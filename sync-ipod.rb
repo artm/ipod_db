@@ -50,6 +50,9 @@ Main {
 
   mode('ls') {
     description 'produce a colorful listing of the tracks in the ipod database'
+
+    IgnoreProgressUnder = 0.01
+
     def run
       @ipod_root = params['ipod_root'].value
       @ipod_db = IpodDB.new @ipod_root
@@ -64,9 +67,12 @@ Main {
         pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
         abs_path = File.join @ipod_root, track.filename
         total_time = track_length(abs_path)
-        if pos / total_time >= 0.05
+        if pos / total_time >= IgnoreProgressUnder
           info['pos'] = Pretty.seconds pos
           info['total'] = Pretty.seconds total_time
+          # and cache seconds
+          track['pos'] = pos
+          track['total_time'] = total_time
         end
       end
       info
@@ -81,6 +87,14 @@ Main {
       puts listing_entry
 
       info = track_info(track)
+      if track.include? 'pos'
+        progress = ProgressBar.create(
+          format: "   [%b #{info.pos} %P%%%i] #{info.total}",
+          starting_at: track.pos,
+          total: track.total_time,
+        )
+        puts
+      end
       if info.count > 0
         puts "  " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
       end
@@ -122,6 +136,7 @@ BEGIN {
   require 'smart_colored/extend'
   require 'map'
   require 'taglib'
+  require 'ruby-progressbar'
 
   $LOAD_PATH << File.dirname(__FILE__) + '/lib'
   require 'ipod_db'

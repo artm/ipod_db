@@ -5,6 +5,7 @@ gem 'map'
 gem 'main'
 gem 'smart_colored'
 gem 'taglib-ruby'
+gem 'ruby-progressbar'
 
 gem 'purdytest'
 gem 'guard'
