@@ -4,8 +4,8 @@ module Pretty
       "#{seconds} sec"
     else
       minutes = (seconds / 60).floor
+      seconds -= 60*minutes
       if minutes < 60
-        seconds -= 60*minutes
         "%02d:%02d" % [minutes, seconds]
       else
         hours = (minutes / 60).floor

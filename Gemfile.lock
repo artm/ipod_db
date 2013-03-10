@@ -41,6 +41,7 @@ GEM
       ffi (>= 0.5.0)
     slop (3.4.3)
     smart_colored (1.1.1)
+    taglib-ruby (0.5.2)
     terminal-table (1.4.5)
     thor (0.17.0)
 
@@ -59,3 +60,4 @@ DEPENDENCIES
   rb-fsevent
   rb-inotify
   smart_colored
+  taglib-ruby

@@ -49,6 +49,7 @@ Main {
   end
 
   mode('ls') {
+    description 'produce a colorful listing of the tracks in the ipod database'
     def run
       @ipod_root = params['ipod_root'].value
       @ipod_db = IpodDB.new @ipod_root
@@ -60,7 +61,13 @@ Main {
       info['played'] = track.playcount if track.playcount > 0
       info['skipped'] = track.skippedcount if track.skippedcount > 0
       if track.bookmarkflag && track.bookmarktime > 0
-        info['pos'] = Pretty.seconds(track.bookmarktime / 4)
+        pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
+        abs_path = File.join @ipod_root, track.filename
+        total_time = track_length(abs_path)
+        if pos / total_time >= 0.05
+          info['pos'] = Pretty.seconds pos
+          info['total'] = Pretty.seconds total_time
+        end
       end
       info
     end
@@ -99,6 +106,10 @@ Main {
   def track? path
     IpodDB::ExtToFileType.include? File.extname(path)
   end
+
+  def track_length( path )
+    TagLib::FileRef.open(path){|file| file.audio_properties.length}
+  end
 }
 
 BEGIN {
@@ -110,6 +121,7 @@ BEGIN {
   require 'pathname'
   require 'smart_colored/extend'
   require 'map'
+  require 'taglib'
 
   $LOAD_PATH << File.dirname(__FILE__) + '/lib'
   require 'ipod_db'

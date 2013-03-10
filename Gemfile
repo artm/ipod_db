@@ -4,6 +4,7 @@ gem 'bindata'
 gem 'map'
 gem 'main'
 gem 'smart_colored'
+gem 'taglib-ruby'
 
 gem 'purdytest'
 gem 'guard'
