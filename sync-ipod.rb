@@ -61,8 +61,8 @@ Main {
 
     def track_info track
       info = Map.new
-      info['played'] = track.playcount if track.playcount > 0
-      info['skipped'] = track.skippedcount if track.skippedcount > 0
+      info['playcount'] = track.playcount if track.playcount > 0
+      info['skipcount'] = track.skippedcount if track.skippedcount > 0
       if track.bookmarkflag && track.bookmarktime > 0
         pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
         abs_path = File.join @ipod_root, track.filename
@@ -89,14 +89,16 @@ Main {
       info = track_info(track)
       if track.include? 'pos'
         progress = ProgressBar.create(
-          format: "   [%b #{info.pos} %P%%%i] #{info.total}",
+          format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
           starting_at: track.pos,
           total: track.total_time,
         )
         puts
+        info.delete :pos
+        info.delete :total
       end
       if info.count > 0
-        puts "  " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
+        puts "    " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
       end
     end
   }
