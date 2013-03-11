@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 
+# avoid validation of ipod_root if no parameters given
+ARGV.replace %w( help ) if ARGV.empty?
+
 Main {
   version '0.2.0'
 
   description <<-__
   A couple of tools for working with iPod Shuffle (2nd gen) database from
-  command line
+  command line. Each subcommand understands -h/--help flag.
   __
 
   author 'artm <femistofel@gmail.com>'
@@ -15,6 +18,10 @@ Main {
     validate {|path| IpodDB.looks_like_ipod? path}
     description 'path where ipod is mounted'
   }
+
+  def run
+    help!
+  end
 
   mode('sync') {
     description <<-__
@@ -52,22 +59,6 @@ Main {
       @ipod_db.save
       exit_success!
     end
-
-    def collect_tracks path, root
-      begin
-        tracks = []
-        Find.find(path) do |filepath|
-          tracks << ipod_path(filepath,root) if track? filepath
-        end
-        tracks
-      rescue Errno::ENOENT
-        []
-      end
-    end
-
-    def track? path
-      IpodDB::ExtToFileType.include? File.extname(path)
-    end
   }
 
   mode('ls') {
@@ -81,57 +72,15 @@ Main {
       @ipod_db.each_track_with_index {|track,i| list_track i, track}
     end
 
-    def track_info track
-      info = Map.new
-      info['playcount'] = track.playcount if track.playcount > 0
-      info['skipcount'] = track.skippedcount if track.skippedcount > 0
-      if track.bookmarkflag && track.bookmarktime > 0
-        pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
-        abs_path = resolve_ipod_path track.filename
-        total_time = track_length(abs_path)
-        if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
-          info['pos'] = Pretty.seconds pos
-          info['total'] = Pretty.seconds total_time
-          # and cache seconds
-          track['pos'] = pos
-          track['total_time'] = total_time
-        end
-      end
-      info
-    end
-
-    def list_track i, track
-      abs_path = resolve_ipod_path track.filename
-      exists = File.exists?(abs_path)
-      track_color = exists ? :green : :red
-
-      listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
-      listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
-      puts listing_entry
-
-      return unless exists
-
-      info = track_info(track)
-      if track.include? 'pos'
-        progress = ProgressBar.create(
-          format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
-          starting_at: track.pos,
-          total: track.total_time,
-        )
-        puts
-        info.delete :pos
-        info.delete :total
-      end
-      if info.count > 0
-        puts "    " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
-      end
-    end
   }
 
   mode('rm') {
     argument('track') {
       arity -2
-      description 'tracks to delete from device'
+      description <<-__
+      track numbers to delete from device (ranges like
+      2-5 are accepted too).
+      __
     }
     option('ipod_root','r') {
       default "/media/#{ENV['USER']}/IPOD"
@@ -146,22 +95,6 @@ Main {
       if agree "Are you sure you want them gone (Y/n)?", true
         FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
       end
-    end
-    def parse_track_list args
-      tracks = Map.new
-      args.each do |arg|
-        case arg
-        when /^\d+$/
-          n = arg.to_i
-          tracks[n] = @ipod_db[n]
-        when /^(\d+)-(\d+)$/
-          (Regexp.last_match(1)..Regexp.last_match(2)).each do |n_str|
-            n = n_str.to_i
-            tracks[n] = @ipod_db[n]
-          end
-        end
-      end
-      tracks
     end
   }
 
@@ -180,6 +113,85 @@ Main {
   def load_ipod_db
     @ipod_root = params['ipod_root'].value
     @ipod_db = IpodDB.new @ipod_root
+  end
+
+  def collect_tracks path, root
+    begin
+      tracks = []
+      Find.find(path) do |filepath|
+        tracks << ipod_path(filepath,root) if track? filepath
+      end
+      tracks
+    rescue Errno::ENOENT
+      []
+    end
+  end
+
+  def track? path
+    IpodDB::ExtToFileType.include? File.extname(path)
+  end
+
+  def track_info track
+    info = Map.new
+    info['playcount'] = track.playcount if track.playcount > 0
+    info['skipcount'] = track.skippedcount if track.skippedcount > 0
+    if track.bookmarkflag && track.bookmarktime > 0
+      pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
+      abs_path = resolve_ipod_path track.filename
+      total_time = track_length(abs_path)
+      if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
+        info['pos'] = Pretty.seconds pos
+        info['total'] = Pretty.seconds total_time
+        # and cache seconds
+        track['pos'] = pos
+        track['total_time'] = total_time
+      end
+    end
+    info
+  end
+
+  def list_track i, track
+    abs_path = resolve_ipod_path track.filename
+    exists = File.exists?(abs_path)
+    track_color = exists ? :green : :red
+
+    listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
+    listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
+    puts listing_entry
+
+    return unless exists
+
+    info = track_info(track)
+    if track.include? 'pos'
+      progress = ProgressBar.create(
+        format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
+        starting_at: track.pos,
+        total: track.total_time,
+      )
+      puts
+      info.delete :pos
+      info.delete :total
+    end
+    if info.count > 0
+      puts "    " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
+    end
+  end
+
+  def parse_track_list args
+    tracks = Map.new
+    args.each do |arg|
+      case arg
+      when /^\d+$/
+        n = arg.to_i
+        tracks[n] = @ipod_db[n]
+      when /^(\d+)-(\d+)$/
+        (Regexp.last_match(1)..Regexp.last_match(2)).each do |n_str|
+        n = n_str.to_i
+        tracks[n] = @ipod_db[n]
+        end
+      end
+    end
+    tracks
   end
 }
 
