@@ -51,6 +51,7 @@ Main {
   mode('ls') {
     description 'produce a colorful listing of the tracks in the ipod database'
 
+    IgnorePlaybackPosUnder = 10
     IgnoreProgressUnder = 0.01
 
     def run
@@ -67,7 +68,7 @@ Main {
         pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
         abs_path = File.join @ipod_root, track.filename
         total_time = track_length(abs_path)
-        if pos / total_time >= IgnoreProgressUnder
+        if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
           info['pos'] = Pretty.seconds pos
           info['total'] = Pretty.seconds total_time
           # and cache seconds
