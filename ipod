@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 Main {
-  version '0.1.0'
+  version '0.2.0'
 
   description <<-__
   A couple of tools for working with iPod Shuffle (2nd gen) database from
@@ -43,14 +43,13 @@ Main {
       description 'subdirectory of ipod with non-bookmarkable media'
     }
     def run
-      ipod_root = params['ipod_root'].value
-      ipod_db = IpodDB.new ipod_root
-      books_path = File.join ipod_root, params['books'].value
-      songs_path = File.join ipod_root, params['songs'].value
-      books = collect_tracks(books_path, ipod_root)
-      songs = collect_tracks(songs_path, ipod_root)
-      ipod_db.update books: books, songs: songs
-      ipod_db.save
+      load_ipod_db
+      books_path = resolve_ipod_path params['books'].value
+      songs_path = resolve_ipod_path params['songs'].value
+      books = collect_tracks(books_path, @ipod_root)
+      songs = collect_tracks(songs_path, @ipod_root)
+      @ipod_db.update books: books, songs: songs
+      @ipod_db.save
       exit_success!
     end
 
@@ -78,8 +77,7 @@ Main {
     IgnoreProgressUnder = 0.01
 
     def run
-      @ipod_root = params['ipod_root'].value
-      @ipod_db = IpodDB.new @ipod_root
+      load_ipod_db
       @ipod_db.each_track_with_index {|track,i| list_track i, track}
     end
 
@@ -89,7 +87,7 @@ Main {
       info['skipcount'] = track.skippedcount if track.skippedcount > 0
       if track.bookmarkflag && track.bookmarktime > 0
         pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
-        abs_path = File.join @ipod_root, track.filename
+        abs_path = resolve_ipod_path track.filename
         total_time = track_length(abs_path)
         if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
           info['pos'] = Pretty.seconds pos
@@ -103,12 +101,15 @@ Main {
     end
 
     def list_track i, track
-      abs_path = File.join @ipod_root, track.filename
-      track_color = File.exists?(abs_path) ? :green : :red
+      abs_path = resolve_ipod_path track.filename
+      exists = File.exists?(abs_path)
+      track_color = exists ? :green : :red
 
       listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
       listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
       puts listing_entry
+
+      return unless exists
 
       info = track_info(track)
       if track.include? 'pos'
@@ -127,12 +128,58 @@ Main {
     end
   }
 
+  mode('rm') {
+    argument('track') {
+      arity -2
+      description 'tracks to delete from device'
+    }
+    option('ipod_root','r') {
+      default "/media/#{ENV['USER']}/IPOD"
+      validate {|path| IpodDB.looks_like_ipod? path}
+      description 'path where ipod is mounted'
+    }
+    def run
+      load_ipod_db
+      tracks = parse_track_list(params['track'].values).map{|i,t| [i,t.filename]}
+      puts "The following tracks are selected for removal:"
+      tracks.each { |i,path| puts "  %02d. %s" % [i,path.green] }
+      if agree "Are you sure you want them gone (Y/n)?", true
+        FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
+      end
+    end
+    def parse_track_list args
+      tracks = Map.new
+      args.each do |arg|
+        case arg
+        when /^\d+$/
+          n = arg.to_i
+          tracks[n] = @ipod_db[n]
+        when /^(\d+)-(\d+)$/
+          (Regexp.last_match(1)..Regexp.last_match(2)).each do |n_str|
+            n = n_str.to_i
+            tracks[n] = @ipod_db[n]
+          end
+        end
+      end
+      tracks
+    end
+  }
+
   def ipod_path path, root
     '/' + Pathname.new(path).relative_path_from(Pathname.new root).to_s
   end
 
+  def resolve_ipod_path ipath
+    File.join @ipod_root, ipath
+  end
+
   def track_length( path )
     TagLib::FileRef.open(path){|file| file.audio_properties.length}
+  end
+
+  def load_ipod_db
+    @ipod_root = params['ipod_root'].value
+    @ipod_db = IpodDB.new @ipod_root
   end
 }
 
@@ -147,6 +194,7 @@ BEGIN {
   require 'map'
   require 'taglib'
   require 'ruby-progressbar'
+  require 'highline/import'
 
   $LOAD_PATH << File.dirname(__FILE__) + '/lib'
   require 'ipod_db'
