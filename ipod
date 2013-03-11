@@ -53,6 +53,22 @@ Main {
       ipod_db.save
       exit_success!
     end
+
+    def collect_tracks path, root
+      begin
+        tracks = []
+        Find.find(path) do |filepath|
+          tracks << ipod_path(filepath,root) if track? filepath
+        end
+        tracks
+      rescue Errno::ENOENT
+        []
+      end
+    end
+
+    def track? path
+      IpodDB::ExtToFileType.include? File.extname(path)
+    end
   }
 
   mode('ls') {
@@ -111,24 +127,8 @@ Main {
     end
   }
 
-  def collect_tracks path, root
-    begin
-      tracks = []
-      Find.find(path) do |filepath|
-        tracks << ipod_path(filepath,root) if track? filepath
-      end
-      tracks
-    rescue Errno::ENOENT
-      []
-    end
-  end
-
   def ipod_path path, root
     '/' + Pathname.new(path).relative_path_from(Pathname.new root).to_s
-  end
-
-  def track? path
-    IpodDB::ExtToFileType.include? File.extname(path)
   end
 
   def track_length( path )
