@@ -131,8 +131,13 @@ class IpodDB
     @tracks.each_with_index {|path_track,i| yield path_track[1], i}
   end
 
-  def [] filename
-    @tracks[filename]
+  def [] filename_or_index
+    case filename_or_index
+    when Integer
+      @tracks.values[filename_or_index]
+    else
+      @tracks[filename_or_index]
+    end
   end
 
   def inspect
