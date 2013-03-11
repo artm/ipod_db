@@ -6,6 +6,7 @@ gem 'main'
 gem 'smart_colored'
 gem 'taglib-ruby'
 gem 'ruby-progressbar'
+gem 'highline'
 
 gem 'purdytest'
 gem 'guard'

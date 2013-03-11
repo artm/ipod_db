@@ -18,6 +18,7 @@ GEM
       guard (~> 1.1)
     guard-minitest (0.5.0)
       guard (>= 0.4)
+    highline (1.6.15)
     libnotify (0.8.0)
       ffi (>= 1.0.11)
     listen (0.7.3)
@@ -54,6 +55,7 @@ DEPENDENCIES
   guard
   guard-bundler
   guard-minitest
+  highline
   libnotify
   main
   map
