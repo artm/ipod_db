@@ -1,34 +1,82 @@
 NAME
-  sync-ipod.rb v0.1.0
+  ipod v0.2.0
 
 SYNOPSIS
-  sync-ipod.rb ipod_root [options]+
+  ipod (sync|ls|rm) ipod_root [options]+
 
 DESCRIPTION
-  Update iPod Shuffle (2nd gen) database. Given directories of bookmarkable
-  and non-bookmarkable media sync-ipod.rb will find all supported tracks and
-  add them to the iPod database so the device is aware of their existance.
+  A couple of tools for working with iPod Shuffle (2nd gen) database from
+  command line. Each subcommand understands -h/--help flag.
 
+PARAMETERS
+  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
+      path where ipod is mounted 
+  --help, -h 
+
+AUTHOR
+  artm <femistofel@gmail.com>
+
+
+SUBCOMMAND: sync
+~~~~~~~~~~~~~~~~
+
+SYNOPSIS
+  ipod sync ipod_root [options]+
+
+DESCRIPTION
+  Update the iPod database. Given directories of bookmarkable and non-bookmarkable
+  media ipod will find all supported tracks add them to the iPod database so
+  the device is aware of their existance.
+  
   It is perfectly possible to have other directories full of tracks in device's
   subconscious - e.g. when time-sharing the device among members of a poor
   family. Just make sure you update the database using your directories when
   receiving it from a relation.
-
-  iPod remembers playback position on bookmarkable media and the sync-ipod.rb goes
+  
+  iPod remembers playback position on bookmarkable media and the ipod goes
   out of its way to preserve the bookmarks. It also removes bookmarkable files
   from shuffle list.
 
 PARAMETERS
-  ipod_root (1 -> ipod_root=/media/artm/IPOD)
-      path where ipod is mounted
-  --books=books, -b (0 ~> books=books)
-      subdirectory of ipod with bookmarkable media
-  --songs=songs, -s (0 ~> songs=songs)
-      subdirectory of ipod with non-bookmarkable media
-  --help, -h
+  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
+      path where ipod is mounted 
+  --books=books, -b (0 ~> books=books) 
+      subdirectory of ipod with bookmarkable media 
+  --songs=songs, -s (0 ~> songs=songs) 
+      subdirectory of ipod with non-bookmarkable media 
+  --help, -h 
 
-AUTHOR
-  artm <femistofel@gmail.com>
+SUBCOMMAND: ls
+~~~~~~~~~~~~~~
+
+SYNOPSIS
+  ipod ls ipod_root [options]+
+
+DESCRIPTION
+  produce a colorful listing of the tracks in the ipod database
+
+PARAMETERS
+  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
+      path where ipod is mounted 
+  --help, -h 
+
+SUBCOMMAND: rm
+~~~~~~~~~~~~~~
+
+SYNOPSIS
+  ipod rm track track* [options]+
+
+DESCRIPTION
+  Remove tracks from the device by their numbers (that's why ls
+  displays numbers: so it's easier to select them for rm).
+
+PARAMETERS
+  track (-2 -> track) 
+       track numbers to delete from device (ranges like 2-5 are accepted 
+      too). 
+  --ipod_root, -r 
+      path where ipod is mounted 
+  --help, -h 
 
 HISTORY
   I used to do the same sort of thing and more with a bunch of python scripts.
@@ -39,4 +87,3 @@ HISTORY
   worked so I made it dump what it read in ruby-esque format for testing
   (that's test_data.rb). The test_data isn't very exciting though (all
   tracks are in default state without bookmarks).
-

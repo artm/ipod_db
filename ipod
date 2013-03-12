@@ -75,6 +75,10 @@ Main {
   }
 
   mode('rm') {
+    description <<-__
+    Remove tracks from the device by their numbers (that's why ls
+    displays numbers: so it's easier to select them for rm).
+    __
     argument('track') {
       arity -2
       description <<-__
