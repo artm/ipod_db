@@ -85,8 +85,8 @@ describe IpodDB do
       @expected_hash = Hash[old_filenames.zip @expected[:tracks]]
       one_third = old_filenames.count / 3
       @new_books = old_filenames[0...one_third]
-      @new_songs = old_filenames[one_third...2*one_third]
-      @removed = old_filenames[2*one_third..-1]
+      @removed = old_filenames[one_third...2*one_third]
+      @new_songs = old_filenames[2*one_third..-1]
       @new_books << '/another_book.mp3'
       @new_songs << '/another_song.mp3'
     end
@@ -119,6 +119,13 @@ describe IpodDB do
           rest.must_be_subset_of actual
         end
       end
+    end
+    it 'keeps the current track if still present' do
+      current_filename = @expected[:tracks][ @expected[:pstate][:trackno] ][:filename]
+      ipod_db = IpodDB.new @ipod_root
+      ipod_db.update books: @new_books, songs: @new_songs
+      ipod_db.must_include current_filename
+      ipod_db.current_filename.must_equal current_filename
     end
     it 'writes the whole db' do
       # When I ...

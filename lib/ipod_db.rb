@@ -15,7 +15,7 @@ class Hash
 end
 
 class IpodDB
-  attr_reader :current_filename, :playback_state
+  attr_reader :playback_state
 
   ExtToFileType = {
     '.mp3' => 1,
@@ -52,8 +52,6 @@ class IpodDB
     @playback_state = read_records PState, 'PState'
     stats = read_records Stats, 'Stats'
     sd = read_records SD, 'SD'
-    @current_filename = sd.records[ @playback_state.trackno ].filename
-    @current_pos = @playback_state.trackpos
     @tracks = Map.new
     stats.records.each_with_index do |stat,i|
       h = stat.snapshot.merge( sd.records[i].snapshot )
@@ -64,9 +62,11 @@ class IpodDB
 
   def init_db
     @playback_state = PState.new
-    @current_filename = nil
-    @current_pos = 0
     @tracks = Map.new
+  end
+
+  def current_filename
+    @tracks.keys[ @playback_state.trackno ]
   end
 
   def read_records bindata, file_suffix
@@ -82,6 +82,7 @@ class IpodDB
     new_books = opts.getopt :books, default: []
     new_songs = opts.getopt :songs, default: []
     new_tracks = new_books + new_songs
+    prev_current_filename = current_filename
 
     old_tracks = @tracks.keys.clone # clone because otherwise it'll change during iteration
     old_tracks.each do |filename|
@@ -95,13 +96,15 @@ class IpodDB
       @tracks[filename] ||= {:filename => filename}
       @tracks[filename].merge! shuffleflag: true, bookmarkflag: false
     end
-  end
-
-  def save
-    unless @tracks.include? @current_filename
+    if @tracks.include? prev_current_filename
+      @playback_state.trackno = @tracks.find_index{|filename,t|filename == prev_current_filename}
+    else
       @playback_state.trackno = -1
       @playback_state.trackpos = -1
     end
+  end
+
+  def save
     stats = Stats.new
     sd = SD.new
     @tracks.each_value do |track|
