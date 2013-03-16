@@ -10,12 +10,10 @@ Main {
 
   author 'artm <femistofel@gmail.com>'
 
+  name 'ipod_db'
+  config ipod_root: "/media/#{ENV['USER']}/IPOD"
   option('version','v') {
     description 'show package version and exit'
-  }
-  argument('ipod_root') {
-    default "/media/#{ENV['USER']}/IPOD"
-    description 'path where ipod is mounted'
   }
   IgnorePlaybackPosUnder = 10
   IgnoreProgressUnder = 0.01
@@ -86,10 +84,6 @@ Main {
       2-5 are accepted too).
       __
     }
-    option('ipod_root','r') {
-      default "/media/#{ENV['USER']}/IPOD"
-      description 'path where ipod is mounted'
-    }
     def run
       load_ipod_db
       rm
@@ -133,7 +127,7 @@ Main {
   end
 
   def load_ipod_db
-    @ipod_root = params['ipod_root'].value
+    @ipod_root = config['ipod_root']
     unless IpodDB.looks_like_ipod? @ipod_root
       fatal { "#{@ipod_root} does not appear to be a mounted ipod" }
       exit exit_failure
