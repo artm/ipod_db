@@ -4,6 +4,8 @@ require 'bindata/itypes'
 require 'map'
 require 'pathname'
 
+require 'ipod_db/version'
+
 class Hash
   def subset *args
     subset = {}

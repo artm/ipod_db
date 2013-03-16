@@ -4,7 +4,7 @@
 ARGV.replace %w( help ) if ARGV.empty?
 
 Main {
-  version '0.2.0'
+  version IpodDB::VERSION
 
   description <<-__
   A couple of tools for working with iPod Shuffle (2nd gen) database from
@@ -215,5 +215,4 @@ BEGIN {
   $LOAD_PATH << File.dirname(__FILE__) + '/lib'
   require 'ipod_db'
   require 'pretty'
-
 }
