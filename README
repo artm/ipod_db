@@ -1,5 +1,5 @@
 NAME
-  ipod v0.2.0
+  ipod v0.2.2
 
 SYNOPSIS
   ipod (sync|ls|rm) ipod_root [options]+

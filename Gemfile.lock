@@ -1,3 +1,15 @@
+PATH
+  remote: .
+  specs:
+    ipod_db (0.2.2)
+      bindata
+      highline
+      main
+      map
+      ruby-progressbar
+      smart_colored
+      taglib-ruby
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -51,17 +63,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bindata
   guard
   guard-bundler
   guard-minitest
-  highline
+  ipod_db!
   libnotify
-  main
-  map
   purdytest
   rb-fsevent
   rb-inotify
-  ruby-progressbar
-  smart_colored
-  taglib-ruby

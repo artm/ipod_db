@@ -1,5 +1,5 @@
 task :readme do
-  readme = `./ipod help`
+  readme = `bin/ipod help`
 
   %w(sync ls rm).each do |subcommand|
     title = "SUBCOMMAND: #{subcommand}"
@@ -7,7 +7,7 @@ task :readme do
 
     rejecting = false
     rejects = %w(name author)
-    readme += `./ipod #{subcommand} -h`.split("\n").reject do |line|
+    readme += `bin/ipod #{subcommand} -h`.split("\n").reject do |line|
       if line =~ /^\w/
         rejecting = rejects.include? line.downcase
       else
