@@ -1,39 +1,21 @@
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require  'ipod_db/version'
+
 Gem::Specification.new do |s|
   s.name = 'ipod_db'
-  s.version = '0.2.2'
-  s.date = '2013-03-16'
+  s.version = IpodDB::VERSION
   s.summary = 'ipod database access'
   s.description = 'Access iPod Shuffle 2nd gen from ruby'
   s.author = 'Artem Baguinski'
   s.email = 'femistofel@gmail.com'
   s.homepage = 'https://github.com/artm/ipod_db'
+  s.license = 'Public Domain'
 
-  s.executables = %w(ipod)
-  s.require_path = 'lib'
-  s.files =
-    %w(Rakefile
-       README
-       HISTORY
-       LICENSE
-       ipod_db.gemspec
-
-       bin/ipod
-
-       lib/ipod_db.rb
-       lib/ipod_db/version.rb
-       lib/pretty.rb
-       lib/bindata/itypes.rb
-
-       spec/spec_helper.rb
-       spec/ipod_db_spec.rb
-
-       test_data.rb
-       test_data/iPod_Control/iTunes/iTunesShuffle
-       test_data/iPod_Control/iTunes/iTunesStats
-       test_data/iPod_Control/iTunes/iTunesDB.ext
-       test_data/iPod_Control/iTunes/iTunesSD
-       test_data/iPod_Control/iTunes/iTunesPState
-       test_data/iPod_Control/iTunes/iTunesDB)
+  s.files = `git ls-files`.split($/)
+  s.executables = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  s.test_files = s.files.grep(%r{^(test|spec|features)/})
+  s.require_paths = ["lib"]
 
   s.add_runtime_dependency 'bindata'
   s.add_runtime_dependency 'map'
@@ -43,6 +25,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby-progressbar'
   s.add_runtime_dependency 'highline'
 
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'bundler', '~> 1.3'
+  # not sure where this belongs, they are part of my development process
   s.add_development_dependency 'purdytest'
   s.add_development_dependency 'guard'
   s.add_development_dependency 'guard-minitest'
