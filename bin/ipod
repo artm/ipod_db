@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-# avoid validation of ipod_root if no parameters given
-ARGV.replace %w( help ) if ARGV.empty?
-
 Main {
   version IpodDB::VERSION
 
@@ -13,14 +10,22 @@ Main {
 
   author 'artm <femistofel@gmail.com>'
 
+  option('version','v') {
+    description 'show package version and exit'
+  }
   argument('ipod_root') {
     default "/media/#{ENV['USER']}/IPOD"
-    validate {|path| IpodDB.looks_like_ipod? path}
     description 'path where ipod is mounted'
   }
+  IgnorePlaybackPosUnder = 10
+  IgnoreProgressUnder = 0.01
 
   def run
-    help!
+    if param['version'].given?
+      puts IpodDB::VERSION
+    else
+      help!
+    end
   end
 
   mode('sync') {
@@ -37,6 +42,10 @@ Main {
     iPod remembers playback position on bookmarkable media and the #{program} goes
     out of its way to preserve the bookmarks. It also removes bookmarkable files
     from shuffle list.
+
+    I configure gpodder to place podcast files inside IPOD/books directory and delete
+    them after syncing. Having copied podcasts I run 'ipod sync' to update the
+    database on the device and it's ready for consumption.
     __
 
     option('books','b') {
@@ -51,25 +60,16 @@ Main {
     }
     def run
       load_ipod_db
-      books_path = resolve_ipod_path params['books'].value
-      songs_path = resolve_ipod_path params['songs'].value
-      books = collect_tracks(books_path, @ipod_root)
-      songs = collect_tracks(songs_path, @ipod_root)
-      @ipod_db.update books: books, songs: songs
-      @ipod_db.save
-      exit_success!
+      sync
     end
   }
 
   mode('ls') {
     description 'produce a colorful listing of the tracks in the ipod database'
 
-    IgnorePlaybackPosUnder = 10
-    IgnoreProgressUnder = 0.01
-
     def run
       load_ipod_db
-      @ipod_db.each_track_with_index {|track,i| list_track i, track}
+      ls
     end
 
   }
@@ -88,19 +88,37 @@ Main {
     }
     option('ipod_root','r') {
       default "/media/#{ENV['USER']}/IPOD"
-      validate {|path| IpodDB.looks_like_ipod? path}
       description 'path where ipod is mounted'
     }
     def run
       load_ipod_db
-      tracks = parse_track_list(params['track'].values).map{|i,t| [i,t.filename]}
-      puts "The following tracks are selected for removal:"
-      tracks.each { |i,path| puts "  %2d. %s" % [i,path.green] }
-      if agree "Are you sure you want them gone (Y/n)?", true
-        FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
-      end
+      rm
     end
   }
+
+  def sync
+    books_path = resolve_ipod_path params['books'].value
+    songs_path = resolve_ipod_path params['songs'].value
+    books = collect_tracks(books_path, @ipod_root)
+    songs = collect_tracks(songs_path, @ipod_root)
+    @ipod_db.update books: books, songs: songs
+    @ipod_db.save
+    ls
+  end
+
+  def ls
+    @ipod_db.each_track_with_index {|track,i| list_track i, track}
+  end
+
+  def rm
+    tracks = parse_track_list(params['track'].values).map{|i,t| [i,t.filename]}
+    puts "The following tracks are selected for removal:"
+    tracks.each { |i,path| puts "  %2d. %s" % [i,path.green] }
+    if agree "Are you sure you want them gone (Y/n)?", true
+      FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
+    end
+    sync
+  end
 
   def ipod_path path, root
     '/' + Pathname.new(path).relative_path_from(Pathname.new root).to_s
@@ -116,6 +134,10 @@ Main {
 
   def load_ipod_db
     @ipod_root = params['ipod_root'].value
+    unless IpodDB.looks_like_ipod? @ipod_root
+      fatal { "#{@ipod_root} does not appear to be a mounted ipod" }
+      exit exit_failure
+    end
     @ipod_db = IpodDB.new @ipod_root
   end
 
