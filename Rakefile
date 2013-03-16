@@ -1,9 +1,16 @@
+task :default => [:test, :build]
 task :readme do
   readme = `bin/ipod help`
 
+  readme += <<-__
+
+[![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
+
+  __
+
   %w(sync ls rm).each do |subcommand|
     title = "SUBCOMMAND: #{subcommand}"
-    readme += "\n#{title}\n#{"~" * title.length}\n\n"
+    readme += "\n#{title}\n#{"=" * title.length}\n\n"
 
     rejecting = false
     rejects = %w(name author)
@@ -22,4 +29,12 @@ task :readme do
   puts readme
 end
 
-require 'bundler/gem_tasks'
+Rake::TestTask.new { |t|
+  t.libs << 'spec'
+  t.pattern = 'spec/*_spec.rb'
+}
+
+BEGIN {
+  require 'bundler/gem_tasks'
+  require 'rake/testtask'
+}

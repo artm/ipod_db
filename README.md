@@ -17,8 +17,11 @@ AUTHOR
   artm <femistofel@gmail.com>
 
 
+[![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
+
+
 SUBCOMMAND: sync
-~~~~~~~~~~~~~~~~
+================
 
 SYNOPSIS
   ipod_db sync [options]+
@@ -51,7 +54,7 @@ PARAMETERS
   --help, -h 
 
 SUBCOMMAND: ls
-~~~~~~~~~~~~~~
+==============
 
 SYNOPSIS
   ipod_db ls [options]+
@@ -65,7 +68,7 @@ PARAMETERS
   --help, -h 
 
 SUBCOMMAND: rm
-~~~~~~~~~~~~~~
+==============
 
 SYNOPSIS
   ipod_db rm track track* [options]+
