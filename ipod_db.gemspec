@@ -6,6 +6,10 @@ Gem::Specification.new do |s|
   s.description = 'Access iPod Shuffle 2nd gen from ruby'
   s.author = 'Artem Baguinski'
   s.email = 'femistofel@gmail.com'
+  s.homepage = 'https://github.com/artm/ipod_db'
+
+  s.executables = %w(ipod)
+  s.require_path = 'lib'
   s.files =
     %w(Rakefile
        README
@@ -30,10 +34,6 @@ Gem::Specification.new do |s|
        test_data/iPod_Control/iTunes/iTunesSD
        test_data/iPod_Control/iTunes/iTunesPState
        test_data/iPod_Control/iTunes/iTunesDB)
-  s.executables = %w(ipod)
-  s.require_path = 'lib'
-
-  s.homepage = 'https://github.com/artm/ipod_db'
 
   s.add_runtime_dependency 'bindata'
   s.add_runtime_dependency 'map'
