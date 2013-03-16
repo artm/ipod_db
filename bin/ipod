@@ -91,10 +91,10 @@ Main {
   }
 
   def sync
-    books_path = resolve_ipod_path params['books'].value
-    songs_path = resolve_ipod_path params['songs'].value
-    books = collect_tracks(books_path, @ipod_root)
-    songs = collect_tracks(songs_path, @ipod_root)
+    books_path = params['books'].value
+    songs_path = params['songs'].value
+    books = collect_tracks books_path
+    songs = collect_tracks songs_path
     @ipod_db.update books: books, songs: songs
     @ipod_db.save
     ls
@@ -114,8 +114,8 @@ Main {
     sync
   end
 
-  def ipod_path path, root
-    '/' + Pathname.new(path).relative_path_from(Pathname.new root).to_s
+  def ipod_path path
+    '/' + Pathname.new(path).relative_path_from(Pathname.new @ipod_root).to_s
   end
 
   def resolve_ipod_path ipath
@@ -135,11 +135,11 @@ Main {
     @ipod_db = IpodDB.new @ipod_root
   end
 
-  def collect_tracks path, root
+  def collect_tracks path
     begin
       tracks = []
-      Find.find(path) do |filepath|
-        tracks << ipod_path(filepath,root) if track? filepath
+      Find.find(resolve_ipod_path path) do |filepath|
+        tracks << ipod_path(filepath) if track? filepath
       end
       tracks
     rescue Errno::ENOENT
