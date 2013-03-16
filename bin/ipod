@@ -200,9 +200,6 @@ Main {
 }
 
 BEGIN {
-  require 'rubygems'
-  require 'bundler/setup'
-
   require 'main'
   require 'find'
   require 'pathname'

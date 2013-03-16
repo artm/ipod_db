@@ -21,9 +21,3 @@ task :readme do
 
   puts readme
 end
-
-
-BEGIN {
-  require 'rubygems'
-  require 'bundler/setup'
-}
