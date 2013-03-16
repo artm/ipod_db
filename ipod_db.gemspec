@@ -35,13 +35,19 @@ Gem::Specification.new do |s|
 
   s.homepage = 'https://github.com/artm/ipod_db'
 
+  s.add_runtime_dependency 'bindata'
+  s.add_runtime_dependency 'map'
+  s.add_runtime_dependency 'main'
+  s.add_runtime_dependency 'smart_colored'
+  s.add_runtime_dependency 'taglib-ruby'
+  s.add_runtime_dependency 'ruby-progressbar'
+  s.add_runtime_dependency 'highline'
 
-  s.add_dependency 'bindata'
-  s.add_dependency 'map'
-  s.add_dependency 'main'
-  s.add_dependency 'smart_colored'
-  s.add_dependency 'taglib-ruby'
-  s.add_dependency 'ruby-progressbar'
-  s.add_dependency 'highline'
-
+  s.add_development_dependency 'purdytest'
+  s.add_development_dependency 'guard'
+  s.add_development_dependency 'guard-minitest'
+  s.add_development_dependency 'guard-bundler'
+  s.add_development_dependency 'rb-inotify'
+  s.add_development_dependency 'rb-fsevent'
+  s.add_development_dependency 'libnotify'
 end
