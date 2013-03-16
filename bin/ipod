@@ -225,7 +225,7 @@ BEGIN {
   require 'ruby-progressbar'
   require 'highline/import'
 
-  $LOAD_PATH << File.dirname(__FILE__) + '/lib'
+  # our own
   require 'ipod_db'
   require 'pretty'
 }
