@@ -95,7 +95,7 @@ Main {
       load_ipod_db
       tracks = parse_track_list(params['track'].values).map{|i,t| [i,t.filename]}
       puts "The following tracks are selected for removal:"
-      tracks.each { |i,path| puts "  %02d. %s" % [i,path.green] }
+      tracks.each { |i,path| puts "  %2d. %s" % [i,path.green] }
       if agree "Are you sure you want them gone (Y/n)?", true
         FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
       end
