@@ -21,3 +21,5 @@ task :readme do
 
   puts readme
 end
+
+require 'bundler/gem_tasks'
