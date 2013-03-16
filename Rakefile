@@ -9,8 +9,7 @@ task :readme do
   __
 
   %w(sync ls rm).each do |subcommand|
-    title = "SUBCOMMAND: #{subcommand}"
-    readme += "\n#{title}\n#{"=" * title.length}\n\n"
+    readme += "\nSUBCOMMAND: #{subcommand}\n"
 
     rejecting = false
     rejects = %w(name author)
@@ -26,7 +25,7 @@ task :readme do
   readme += "\nHISTORY\n"
   readme += IO.read('HISTORY').split("\n").map{|s| "  #{s}"}.join("\n")
 
-  puts readme
+  puts readme.gsub(/^\w.*$/) {|m| "#{$&}\n#{'=' * $&.length}\n" }.gsub(/^ /,'   ')
 end
 
 Rake::TestTask.new { |t|
