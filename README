@@ -1,16 +1,16 @@
 NAME
-  ipod v0.2.2
+  ipod_db v0.2.3
 
 SYNOPSIS
-  ipod (sync|ls|rm) ipod_root [options]+
+  ipod_db (sync|ls|rm) [options]+
 
 DESCRIPTION
   A couple of tools for working with iPod Shuffle (2nd gen) database from
   command line. Each subcommand understands -h/--help flag.
 
 PARAMETERS
-  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
-      path where ipod is mounted 
+  --version, -v 
+      show package version and exit 
   --help, -h 
 
 AUTHOR
@@ -21,7 +21,7 @@ SUBCOMMAND: sync
 ~~~~~~~~~~~~~~~~
 
 SYNOPSIS
-  ipod sync ipod_root [options]+
+  ipod_db sync [options]+
 
 DESCRIPTION
   Update the iPod database. Given directories of bookmarkable and non-bookmarkable
@@ -36,10 +36,14 @@ DESCRIPTION
   iPod remembers playback position on bookmarkable media and the ipod goes
   out of its way to preserve the bookmarks. It also removes bookmarkable files
   from shuffle list.
+  
+  I configure gpodder to place podcast files inside IPOD/books directory and delete
+  them after syncing. Having copied podcasts I run 'ipod sync' to update the
+  database on the device and it's ready for consumption.
 
 PARAMETERS
-  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
-      path where ipod is mounted 
+  --version, -v 
+      show package version and exit 
   --books=books, -b (0 ~> books=books) 
       subdirectory of ipod with bookmarkable media 
   --songs=songs, -s (0 ~> songs=songs) 
@@ -50,21 +54,21 @@ SUBCOMMAND: ls
 ~~~~~~~~~~~~~~
 
 SYNOPSIS
-  ipod ls ipod_root [options]+
+  ipod_db ls [options]+
 
 DESCRIPTION
   produce a colorful listing of the tracks in the ipod database
 
 PARAMETERS
-  ipod_root (1 -> ipod_root=/media/artm/IPOD) 
-      path where ipod is mounted 
+  --version, -v 
+      show package version and exit 
   --help, -h 
 
 SUBCOMMAND: rm
 ~~~~~~~~~~~~~~
 
 SYNOPSIS
-  ipod rm track track* [options]+
+  ipod_db rm track track* [options]+
 
 DESCRIPTION
   Remove tracks from the device by their numbers (that's why ls
@@ -74,8 +78,8 @@ PARAMETERS
   track (-2 -> track) 
        track numbers to delete from device (ranges like 2-5 are accepted 
       too). 
-  --ipod_root, -r 
-      path where ipod is mounted 
+  --version, -v 
+      show package version and exit 
   --help, -h 
 
 HISTORY
