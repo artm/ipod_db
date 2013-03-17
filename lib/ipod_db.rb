@@ -90,12 +90,14 @@ class IpodDB
     old_tracks.each do |filename|
       @tracks.delete filename unless new_tracks.include? filename
     end
+    old_tracks = @tracks
+    @tracks = Map.new
     new_books.each do |filename|
-      @tracks[filename] ||= {:filename => filename}
+      @tracks[filename] = old_tracks[filename] || {:filename => filename}
       @tracks[filename].merge! shuffleflag: false, bookmarkflag: true
     end
     new_songs.each do |filename|
-      @tracks[filename] ||= {:filename => filename}
+      @tracks[filename] = old_tracks[filename] || {:filename => filename}
       @tracks[filename].merge! shuffleflag: true, bookmarkflag: false
     end
     if @tracks.include? prev_current_filename

@@ -142,5 +142,18 @@ describe IpodDB do
       end
       ipod_db.playback_state.must_equal test_db.playback_state
     end
+    it 'updates the track order' do
+      # When I ...
+      ipod_db = IpodDB.new @ipod_root
+      @new_books.shuffle!
+      ipod_db.update books: @new_books, songs: @new_songs
+
+      # Then ...
+      book_order = []
+      ipod_db.each_track do |t|
+        book_order << t[:filename] if @new_books.include? t[:filename]
+      end
+      book_order.must_equal @new_books
+    end
   end
 end
