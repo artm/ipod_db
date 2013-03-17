@@ -33,3 +33,21 @@ Object.infect_an_assertion :assert_includes_none_of, :must_include_none_of
 Object.infect_an_assertion :assert_is_subset_of, :must_be_subset_of
 Object.infect_an_assertion :assert_records_are_like, :must_have_records_like
 
+module Enumerable
+  def distances_between elem
+    d = 0
+    cnt = 0
+    ds = []
+    each do |e|
+      if e == elem
+        cnt += 1
+        ds << d
+        d = 0
+      else
+        d += 1
+      end
+    end
+    ds << d
+    ds
+  end
+end

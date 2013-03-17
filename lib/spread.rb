@@ -20,6 +20,9 @@ module Spread
   def self.spread *args
     return [] if args.empty?
     return args[0] if args.count == 0
+
+    args = args.sort_by{|array|array.count}
+
     mix = args.shift
     while enum = args.shift
       mix = spread_two mix, enum
