@@ -1,7 +1,7 @@
 NAME
 ====
 
-    ipod_db v0.2.3
+    ipod_db v0.2.4
 
 SYNOPSIS
 ========
@@ -42,15 +42,21 @@ DESCRIPTION
 ===========
 
     Update the iPod database. Given directories of bookmarkable and non-bookmarkable
-    media ipod will find all supported tracks add them to the iPod database so
+    media 'ipod' will find all supported tracks add them to the iPod database so
     the device is aware of their existance.
+    
+    The tracks under 'books' folder will get "riffled" - tracks from the same folder
+    are spread out in the list so they don't follow each other if possible. IN THE
+    FUTURE it is planned to allow configuring of track groups which are treated like
+    single folders - e.g. to spread out all SciAm's "60 second somthing" podcasts along
+    the playlist.
     
     It is perfectly possible to have other directories full of tracks in device's
     subconscious - e.g. when time-sharing the device among members of a poor
     family. Just make sure you update the database using your directories when
     receiving it from a relation.
     
-    iPod remembers playback position on bookmarkable media and the ipod goes
+    iPod remembers playback position on bookmarkable media and the 'ipod' goes
     out of its way to preserve the bookmarks. It also removes bookmarkable files
     from shuffle list.
     

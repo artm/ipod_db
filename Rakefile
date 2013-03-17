@@ -25,7 +25,9 @@ task :readme do
   readme += "\nHISTORY\n"
   readme += IO.read('HISTORY').split("\n").map{|s| "  #{s}"}.join("\n")
 
-  puts readme.gsub(/^\w.*$/) {|m| "#{$&}\n#{'=' * $&.length}\n" }.gsub(/^ /,'   ')
+  File.open('README.md','w') do |io|
+    io.puts readme.gsub(/^\w.*$/) {|m| "#{$&}\n#{'=' * $&.length}\n" }.gsub(/^ /,'   ')
+  end
 end
 
 Rake::TestTask.new { |t|
