@@ -1,0 +1,6 @@
+1. spread doesn't work very well with degenerate lists (of single entries):
+longer lists don't get evenly spread
+
+2. IpodDB.update doesn't update the order of existing entries
+
+

@@ -94,6 +94,7 @@ Main {
     books_path = params['books'].value
     songs_path = params['songs'].value
     books = collect_tracks books_path
+    books = riffle(books)
     songs = collect_tracks songs_path
     @ipod_db.update books: books, songs: songs
     @ipod_db.save
@@ -213,6 +214,12 @@ Main {
     end
     tracks
   end
+
+  def riffle paths
+    bins = paths.group_by{|path| File.dirname(path)}.values
+    Spread.spread *bins
+  end
+
 }
 
 BEGIN {
@@ -228,4 +235,5 @@ BEGIN {
   # our own
   require 'ipod_db'
   require 'pretty'
+  require 'spread'
 }
