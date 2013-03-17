@@ -11,7 +11,23 @@ Main {
   author 'artm <femistofel@gmail.com>'
 
   name 'ipod_db'
-  config ipod_root: "/media/#{ENV['USER']}/IPOD"
+  config(
+    ipod_root: "/media/#{ENV['USER']}/IPOD",
+    group_together: [
+      # Just an example
+      [ "60-Second", "Science Talk", "This Week in Science" ],
+      [ "StarShipSofa", "Tales To Terrify" ],
+    ])
+  option('books','b') {
+    argument_required
+    default 'books'
+    description 'subdirectory of ipod with bookmarkable media'
+  }
+  option('songs','s') {
+    argument_required
+    default 'songs'
+    description 'subdirectory of ipod with non-bookmarkable media'
+  }
   option('version','v') {
     description 'show package version and exit'
   }
@@ -52,16 +68,6 @@ Main {
     database on the device and it's ready for consumption.
     __
 
-    option('books','b') {
-      argument_required
-      default 'books'
-      description 'subdirectory of ipod with bookmarkable media'
-    }
-    option('songs','s') {
-      argument_required
-      default 'songs'
-      description 'subdirectory of ipod with non-bookmarkable media'
-    }
     def run
       load_ipod_db
       sync
@@ -100,7 +106,7 @@ Main {
     books_path = params['books'].value
     songs_path = params['songs'].value
     books = collect_tracks books_path
-    books = riffle(books)
+    books = spread(books)
     songs = collect_tracks songs_path
     @ipod_db.update books: books, songs: songs
     @ipod_db.save
@@ -221,11 +227,22 @@ Main {
     tracks
   end
 
-  def riffle paths
-    bins = paths.group_by{|path| File.dirname(path)}.values
-    Spread.spread *bins
+  def spread paths, group_lambda = lambda {|path| track_group(path)}
+    bins = paths.group_by &group_lambda
+    bins.each do |key, bin|
+      bins[key] = spread(bins[key], lambda{|path| File.dirname(path)}) if key.is_a? Integer
+    end
+    Spread.spread *bins.values
   end
 
+  def track_group track
+    config['group_together'].each_with_index do |patterns,group|
+      patterns.each do |pattern|
+        return group if track.downcase.index pattern.downcase
+      end
+    end
+    File.dirname(track)
+  end
 }
 
 BEGIN {
@@ -237,6 +254,8 @@ BEGIN {
   require 'taglib'
   require 'ruby-progressbar'
   require 'highline/import'
+  require 'fileutils'
+  require 'pp'
 
   # our own
   require 'ipod_db'
