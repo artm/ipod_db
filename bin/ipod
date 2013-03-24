@@ -169,9 +169,10 @@ Main {
     info['playcount'] = track.playcount if track.playcount > 0
     info['skipcount'] = track.skippedcount if track.skippedcount > 0
     if track.bookmarkflag && track.bookmarktime > 0
-      pos = track.bookmarktime * 0.256 # ipod keeps time in 256 ms increments
       abs_path = resolve_ipod_path track.filename
       total_time = track_length(abs_path)
+      # ipod keeps time in 256 ms increments
+      pos = [total_time, track.bookmarktime * 0.256].min
       if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
         info['pos'] = Pretty.seconds pos
         info['total'] = Pretty.seconds total_time
