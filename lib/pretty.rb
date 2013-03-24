@@ -1,5 +1,6 @@
 module Pretty
   def Pretty.seconds seconds
+    seconds = seconds.to_i
     if seconds < 60
       "#{seconds} sec"
     else
