@@ -1,7 +1,7 @@
 NAME
 ====
 
-    ipod_db v0.2.4
+    ipod_db v0.2.5
 
 SYNOPSIS
 ========
@@ -17,6 +17,10 @@ DESCRIPTION
 PARAMETERS
 ==========
 
+    --books=books, -b (0 ~> books=books) 
+        subdirectory of ipod with bookmarkable media 
+    --songs=songs, -s (0 ~> songs=songs) 
+        subdirectory of ipod with non-bookmarkable media 
     --version, -v 
         show package version and exit 
     --help, -h 
@@ -28,6 +32,8 @@ AUTHOR
 
 
 [![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
+
+[![Code Climate](https://codeclimate.com/github/artm/ipod_db.png)](https://codeclimate.com/github/artm/ipod_db)
 
 
 SUBCOMMAND: sync
@@ -67,12 +73,12 @@ DESCRIPTION
 PARAMETERS
 ==========
 
-    --version, -v 
-        show package version and exit 
     --books=books, -b (0 ~> books=books) 
         subdirectory of ipod with bookmarkable media 
     --songs=songs, -s (0 ~> songs=songs) 
         subdirectory of ipod with non-bookmarkable media 
+    --version, -v 
+        show package version and exit 
     --help, -h 
 
 SUBCOMMAND: ls
@@ -91,6 +97,10 @@ DESCRIPTION
 PARAMETERS
 ==========
 
+    --books=books, -b (0 ~> books=books) 
+        subdirectory of ipod with bookmarkable media 
+    --songs=songs, -s (0 ~> songs=songs) 
+        subdirectory of ipod with non-bookmarkable media 
     --version, -v 
         show package version and exit 
     --help, -h 
@@ -115,6 +125,10 @@ PARAMETERS
     track (-2 -> track) 
          track numbers to delete from device (ranges like 2-5 are accepted 
         too). 
+    --books=books, -b (0 ~> books=books) 
+        subdirectory of ipod with bookmarkable media 
+    --songs=songs, -s (0 ~> songs=songs) 
+        subdirectory of ipod with non-bookmarkable media 
     --version, -v 
         show package version and exit 
     --help, -h 

@@ -6,6 +6,8 @@ task :readme do
 
 [![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
 
+[![Code Climate](https://codeclimate.com/github/artm/ipod_db.png)](https://codeclimate.com/github/artm/ipod_db)
+
   __
 
   %w(sync ls rm).each do |subcommand|
