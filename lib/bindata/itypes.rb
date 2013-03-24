@@ -1,15 +1,16 @@
 require 'bindata'
 
-class Bool24 < BinData::Primitive
-  uint24le :int
+class IntBool < BinData::Primitive
   def get;   self.int==0 ? false : true ; end
   def set(v) self.int = v ? 1 : 0 ; end
 end
 
-class Bool8 < BinData::Primitive
+class Bool24 < IntBool
+  uint24le :int
+end
+
+class Bool8 < IntBool
   uint8 :int
-  def get;   self.int==0 ? false : true ; end
-  def set(v) self.int = v ? 1 : 0 ; end
 end
 
 class EncodedString < BinData::Primitive
