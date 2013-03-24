@@ -105,6 +105,8 @@ Main {
   def sync
     books_path = params['books'].value
     songs_path = params['songs'].value
+    sanitize_filenames books_path
+    sanitize_filenames songs_path
     books = collect_tracks books_path
     books = spread(books)
     songs = collect_tracks songs_path
@@ -149,14 +151,28 @@ Main {
   end
 
   def collect_tracks path
-    begin
-      tracks = []
-      Find.find(resolve_ipod_path path) do |filepath|
-        tracks << ipod_path(filepath) if track? filepath
+    tracks = []
+    Find.find(resolve_ipod_path path) do |filepath|
+      tracks << ipod_path(filepath) if track? filepath
+    end
+    tracks
+  rescue Errno::ENOENT
+    []
+  end
+
+  def sanitize_filenames path
+    rename_us = []
+    Find.find(resolve_ipod_path path) do |filepath|
+      base_name = File.basename filepath
+      sane_name = IpodDB.sanitize_filename base_name
+      unless base_name == sane_name
+        dir = File.dirname filepath
+        rename_us << [ filepath, "#{dir}/#{sane_name}" ]
       end
-      tracks
-    rescue Errno::ENOENT
-      []
+    end
+    rename_us.reverse_each do |from,to|
+      info "renaming #{from} to #{to}"
+      File.rename from, to
     end
   end
 

@@ -3,6 +3,7 @@ require 'bindata'
 require 'bindata/itypes'
 require 'map'
 require 'pathname'
+require 'active_support/inflector'
 
 require 'ipod_db/version'
 
@@ -153,6 +154,10 @@ class IpodDB
 
   def make_filename suffix
     "#{@root_dir}/iPod_Control/iTunes/iTunes#{suffix}"
+  end
+
+  def self.sanitize_filename filename
+    ActiveSupport::Inflector.transliterate(filename, '_')
   end
 
   class PState < BinData::Record

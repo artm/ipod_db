@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'taglib-ruby'
   s.add_runtime_dependency 'ruby-progressbar'
   s.add_runtime_dependency 'highline'
+  s.add_runtime_dependency 'activesupport'
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'bundler', '~> 1.3'
