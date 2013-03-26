@@ -182,9 +182,9 @@ Main {
 
   def track_info track
     info = Map.new
-    info['playcount'] = track.playcount if track.playcount > 0
-    info['skipcount'] = track.skippedcount if track.skippedcount > 0
-    if track.bookmarkflag && track.bookmarktime > 0
+    info['playcount'] = track.playcount if track.fetch('playcount',0) > 0
+    info['skipcount'] = track.skippedcount if track.fetch('skippedcount',0) > 0
+    if track.fetch('bookmarktime',0) > 0
       abs_path = resolve_ipod_path track.filename
       total_time = track_length(abs_path)
       # ipod keeps time in 256 ms increments
