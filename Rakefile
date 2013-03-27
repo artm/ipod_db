@@ -1,4 +1,5 @@
 task :default => [:test, :build]
+
 task :readme do
   readme = `bin/ipod help`
 
