@@ -36,9 +36,9 @@ Rake::TestTask.new { |t|
   t.pattern = 'spec/*_spec.rb'
 }
 
-task :release => [:readme]
 
 BEGIN {
+  task :release => [:readme]
   require 'bundler/gem_tasks'
   require 'rake/testtask'
 }
