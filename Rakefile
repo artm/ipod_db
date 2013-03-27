@@ -1,15 +1,13 @@
 task :default => [:test, :build]
 
 task :readme do
-  readme = `bin/ipod help`
-
-  readme += <<-__
-
+  readme = <<-__
 [![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
 
 [![Code Climate](https://codeclimate.com/github/artm/ipod_db.png)](https://codeclimate.com/github/artm/ipod_db)
-
   __
+
+  readme += `bin/ipod help`
 
   %w(sync ls rm).each do |subcommand|
     readme += "\nSUBCOMMAND: #{subcommand}\n"

@@ -1,7 +1,10 @@
+[![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
+
+[![Code Climate](https://codeclimate.com/github/artm/ipod_db.png)](https://codeclimate.com/github/artm/ipod_db)
 NAME
 ====
 
-    ipod_db v0.2.5
+    ipod_db v0.2.6
 
 SYNOPSIS
 ========
@@ -29,11 +32,6 @@ AUTHOR
 ======
 
     artm <femistofel@gmail.com>
-
-
-[![Build Status](https://travis-ci.org/artm/ipod_db.png)](https://travis-ci.org/artm/ipod_db)
-
-[![Code Climate](https://codeclimate.com/github/artm/ipod_db.png)](https://codeclimate.com/github/artm/ipod_db)
 
 
 SUBCOMMAND: sync
