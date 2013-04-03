@@ -4,7 +4,7 @@
 NAME
 ====
 
-    ipod_db v0.2.6
+    ipod_db v0.2.7
 
 SYNOPSIS
 ========
@@ -122,13 +122,16 @@ PARAMETERS
 
     track (-2 -> track) 
          track numbers to delete from device (ranges like 2-5 are accepted 
-        too). 
+        too). As a special case, the word 'done' means all finished tracks, 
+        i.e. with play count above zero or progress above 97% 
     --books=books, -b (0 ~> books=books) 
         subdirectory of ipod with bookmarkable media 
     --songs=songs, -s (0 ~> songs=songs) 
         subdirectory of ipod with non-bookmarkable media 
     --version, -v 
         show package version and exit 
+    --pretend, -n 
+        don't delete, just list what would be deleted 
     --help, -h 
 
 HISTORY
