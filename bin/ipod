@@ -33,6 +33,7 @@ Main {
   }
   IgnorePlaybackPosUnder = 10
   IgnoreProgressUnder = 0.01
+  FinishedProgress = 0.97
 
   def run
     if param['version'].given?
@@ -93,10 +94,16 @@ Main {
       arity -2
       description <<-__
       track numbers to delete from device (ranges like
-      2-5 are accepted too).
+      2-5 are accepted too). As a special case, the word
+      'done' means all finished tracks, i.e. with play count
+      above zero or progress above #{ (100*FinishedProgress).floor }%
       __
     }
+    option('pretend','n') {
+      description "don't delete, just list what would be deleted"
+    }
     def run
+      @pretend = params['pretend'].value
       load_ipod_db
       rm
     end
@@ -123,10 +130,12 @@ Main {
     tracks = parse_track_list(params['track'].values).map{|i,t| [i,t.filename]}
     puts "The following tracks are selected for removal:"
     tracks.each { |i,path| puts "  %2d. %s" % [i,path.green] }
-    if agree "Are you sure you want them gone (Y/n)?", true
-      FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
+    unless @pretend
+      if agree "Are you sure you want them gone (Y/n)?", true
+        FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
+      end
+      sync
     end
-    sync
   end
 
   def ipod_path path
@@ -189,12 +198,11 @@ Main {
       total_time = track_length(abs_path)
       # ipod keeps time in 256 ms increments
       pos = [total_time, track.bookmarktime * 0.256].min
-      if pos > IgnorePlaybackPosUnder && pos / total_time >= IgnoreProgressUnder
+      progress = pos / total_time
+      if pos > IgnorePlaybackPosUnder && progress >= IgnoreProgressUnder
         info['pos'] = Pretty.seconds pos
         info['total'] = Pretty.seconds total_time
-        # and cache seconds
-        track['pos'] = pos
-        track['total_time'] = total_time
+        info['progress'] = progress
       end
     end
     info
@@ -212,16 +220,14 @@ Main {
     return unless exists
 
     info = track_info(track)
-    if track.include? 'pos'
+    if info.include? 'progress'
       progress = ProgressBar.create(
         format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
-        starting_at: track.pos,
-        total: track.total_time,
+        starting_at: (100*info.progress),
       )
       puts
-      info.delete :pos
-      info.delete :total
     end
+    ['pos','total','progress'].each{|f| info.delete(f)}
     if info.count > 0
       puts "    " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
     end
@@ -239,9 +245,17 @@ Main {
         n = n_str.to_i
         tracks[n] = @ipod_db[n]
         end
+      when 'done'
+        @ipod_db.each_track_with_index do |track,n|
+          tracks[n] = track if finished? track
+        end
       end
     end
     tracks
+  end
+
+  def finished? track
+    track.fetch('playcount',0) > 0 || track_info(track).fetch('progress',0) >= FinishedProgress
   end
 
   def spread paths, group_lambda = lambda {|path| track_group(path)}
