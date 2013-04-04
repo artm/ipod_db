@@ -133,8 +133,8 @@ Main {
     unless @pretend
       if agree "Are you sure you want them gone (Y/n)?", true
         FileUtils.rm tracks.map{|i,path|resolve_ipod_path path}
+        sync
       end
-      sync
     end
   end
 
