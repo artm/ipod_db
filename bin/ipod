@@ -187,23 +187,28 @@ Main {
   end
 
   def list_track i, track
-    track_color = if track.exists? then
-                    if track.finished?
-                      :cyan
-                    else
-                      :green
-                    end
-                  else
-                    :red
-                  end
-
-    listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
+    listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color(track))]
     listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
     puts listing_entry
+    display_progress track
+  end
 
-    return unless track.exists?
-    if track.pos >= IgnoreProgressUnder and
-       track.progress.between?(IgnoreProgressUnder,Ipod::Track::FinishedProgress)
+  def track_color track
+    if track.exists? then
+      if track.finished?
+        :cyan
+      else
+        :green
+      end
+    else
+      :red
+    end
+  end
+
+  def display_progress track
+    if track.exists? and track.pos >= IgnoreProgressUnder and
+      track.progress.between?(IgnoreProgressUnder,Ipod::Track::FinishedProgress)
+
       progress = ProgressBar.create(
         format: "    [%b #{Pretty.seconds(track.pos).yellow} %P%%%i] #{Pretty.seconds(track.length).yellow}",
         starting_at: (100*track.progress),
