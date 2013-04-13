@@ -1,5 +1,9 @@
 require 'minitest/autorun'
-require 'purdytest'
+require "minitest/reporters"
+MiniTest::Reporters.use!  [
+  MiniTest::Reporters::DefaultReporter.new,
+  MiniTest::Reporters::GuardReporter.new,
+]
 $LOAD_PATH.push "File.dirname(__FILE__)/../lib"
 require 'bindata'
 
@@ -49,5 +53,16 @@ module Enumerable
     end
     ds << d
     ds
+  end
+end
+
+class Object
+  def mock_stub name, retval, args=[], &block
+    mock = MiniTest::Mock.new
+    mock.expect name, retval, args
+    stub name, proc{|*args| mock.method_missing(name,*args)} do
+      yield
+    end
+    mock.verify
   end
 end

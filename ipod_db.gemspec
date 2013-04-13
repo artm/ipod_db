@@ -29,7 +29,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake'
   s.add_development_dependency 'bundler', '~> 1.3'
   # not sure where this belongs, they are part of my development process
-  s.add_development_dependency 'purdytest'
+  s.add_development_dependency 'minitest', '~> 3.0.0'
+  s.add_development_dependency 'minitest-reporters'
   s.add_development_dependency 'guard'
   s.add_development_dependency 'guard-minitest'
   s.add_development_dependency 'guard-bundler'
