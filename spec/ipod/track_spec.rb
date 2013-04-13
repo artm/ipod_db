@@ -44,13 +44,6 @@ describe Ipod::Track do
       end
     end
 
-    it 'is false if progress unknown and playcount is 0' do
-      track = Ipod::Track.new playcount: 0
-      track.stub :length, 100 do
-        refute track.finished?
-      end
-    end
-
   end
 
   describe '#pos' do
