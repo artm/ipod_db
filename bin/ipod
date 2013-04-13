@@ -2,37 +2,29 @@
 
 Main {
   version IpodDB::VERSION
+  author 'artm <femistofel@gmail.com>'
+  name 'ipod_db'
 
   description <<-__
   A couple of tools for working with iPod Shuffle (2nd gen) database from
   command line. Each subcommand understands -h/--help flag.
   __
 
-  author 'artm <femistofel@gmail.com>'
-
-  name 'ipod_db'
-  config(
-    ipod_root: "/media/#{ENV['USER']}/IPOD",
-    group_together: [
-      # Just an example
-      [ "60-Second", "Science Talk", "This Week in Science" ],
-      [ "StarShipSofa", "Tales To Terrify" ],
-    ])
   option('books','b') {
     argument_required
     default 'books'
     description 'subdirectory of ipod with bookmarkable media'
   }
+
   option('songs','s') {
     argument_required
     default 'songs'
     description 'subdirectory of ipod with non-bookmarkable media'
   }
+
   option('version','v') {
     description 'show package version and exit'
   }
-  IgnorePlaybackPosUnder = 10
-  IgnoreProgressUnder = 0.01
 
   def run
     if param['version'].given?
@@ -254,6 +246,17 @@ Main {
     end
     File.dirname(track)
   end
+
+  IgnorePlaybackPosUnder = 10
+  IgnoreProgressUnder = 0.01
+
+  config({
+    ipod_root: "/media/#{ENV['USER']}/IPOD",
+    group_together: [
+      # Just an example
+      [ "60-Second", "Science Talk", "This Week in Science" ],
+      [ "StarShipSofa", "Tales To Terrify" ],
+    ]})
 }
 
 BEGIN {
