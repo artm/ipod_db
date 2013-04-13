@@ -33,7 +33,6 @@ Main {
   }
   IgnorePlaybackPosUnder = 10
   IgnoreProgressUnder = 0.01
-  FinishedProgress = 0.97
 
   def run
     if param['version'].given?
@@ -123,7 +122,9 @@ Main {
   end
 
   def ls
-    @ipod_db.each_track_with_index {|track,i| list_track i, track}
+    @ipod_db.each_track_with_index do |track,i|
+      list_track i, Ipod::Track.new(track.merge(ipod_root: @ipod_root))
+    end
   end
 
   def rm
@@ -144,10 +145,6 @@ Main {
 
   def resolve_ipod_path ipath
     File.join @ipod_root, ipath
-  end
-
-  def track_length( path )
-    TagLib::FileRef.open(path){|file| file.audio_properties.length}
   end
 
   def load_ipod_db
@@ -189,49 +186,29 @@ Main {
     IpodDB::ExtToFileType.include? File.extname(path)
   end
 
-  def track_info track
-    info = Map.new
-    info['playcount'] = track.playcount if track.fetch('playcount',0) > 0
-    info['skipcount'] = track.skippedcount if track.fetch('skippedcount',0) > 0
-    if track.fetch('bookmarktime',0) > 0
-      abs_path = resolve_ipod_path track.filename
-      total_time = track_length(abs_path)
-      # ipod keeps time in 256 ms increments
-      pos = [total_time, track.bookmarktime * 0.256].min
-      progress = pos / total_time
-      if pos > IgnorePlaybackPosUnder && progress >= IgnoreProgressUnder
-        info['pos'] = Pretty.seconds pos
-        info['total'] = Pretty.seconds total_time
-        info['progress'] = progress
-      end
-    end
-    info
-  end
-
   def list_track i, track
-    abs_path = resolve_ipod_path track.filename
-    exists = File.exists?(abs_path)
-    track_color = exists ? :green : :red
-    track_color = :cyan if exists and finished? track
+    track_color = if track.exists? then
+                    if track.finished?
+                      :cyan
+                    else
+                      :green
+                    end
+                  else
+                    :red
+                  end
 
     listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
     listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
     puts listing_entry
 
-    return unless exists
-
-    info = track_info(track)
-    puts listing_entry
-    if info.include? 'progress'
+    return unless track.exists?
+    if track.pos >= IgnoreProgressUnder and
+       track.progress.between?(IgnoreProgressUnder,Ipod::Track::FinishedProgress)
       progress = ProgressBar.create(
-        format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
-        starting_at: (100*info.progress),
+        format: "    [%b #{Pretty.seconds(track.pos).yellow} %P%%%i] #{Pretty.seconds(track.length).yellow}",
+        starting_at: (100*track.progress),
       )
       puts
-    end
-    ['pos','total','progress'].each{|f| info.delete(f)}
-    if info.count > 0
-      puts "    " + info.map{|label,value| "#{label}: #{value.to_s.yellow}"}.join(" ")
     end
   end
 
@@ -254,10 +231,6 @@ Main {
       end
     end
     tracks
-  end
-
-  def finished? track
-    track.fetch('playcount',0) > 0 || track_info(track).fetch('progress',0) >= FinishedProgress
   end
 
   def spread paths, group_lambda = lambda {|path| track_group(path)}
@@ -284,7 +257,6 @@ BEGIN {
   require 'pathname'
   require 'smart_colored/extend'
   require 'map'
-  require 'taglib'
   require 'ruby-progressbar'
   require 'highline/import'
   require 'fileutils'
@@ -292,6 +264,7 @@ BEGIN {
 
   # our own
   require 'ipod_db'
+  require 'ipod/track'
   require 'pretty'
   require 'spread'
 }
