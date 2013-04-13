@@ -212,6 +212,7 @@ Main {
     abs_path = resolve_ipod_path track.filename
     exists = File.exists?(abs_path)
     track_color = exists ? :green : :red
+    track_color = :cyan if exists and finished? track
 
     listing_entry = "%2d: %s" % [i,track.filename.apply_format( color: track_color )]
     listing_entry = listing_entry.bold if @ipod_db.playback_state.trackno == i
@@ -220,6 +221,7 @@ Main {
     return unless exists
 
     info = track_info(track)
+    puts listing_entry
     if info.include? 'progress'
       progress = ProgressBar.create(
         format: "    [%b #{info.pos.yellow} %P%%%i] #{info.total.yellow}",
