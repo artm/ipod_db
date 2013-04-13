@@ -4,7 +4,7 @@
 NAME
 ====
 
-    ipod_db v0.2.8
+    ipod_db v0.2.9
 
 SYNOPSIS
 ========
