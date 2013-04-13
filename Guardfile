@@ -3,6 +3,7 @@
 
 guard 'bundler' do
   watch('Gemfile')
+  watch('ipod_db.gemspec')
 end
 
 guard 'minitest' do
