@@ -87,7 +87,8 @@ Main {
       track numbers to delete from device (ranges like
       2-5 are accepted too). As a special case, the word
       'done' means all finished tracks, i.e. with play count
-      above zero or progress above #{ (100*Ipod::Track::FinishedProgress).floor }%
+      above zero or progress above
+      #{ (100*Ipod::Track::FinishedProgress).floor }%
       __
     }
     option('pretend','n') {
@@ -223,7 +224,7 @@ Main {
         end
       when 'done'
         @ipod_db.each_track_with_index do |track,n|
-          tracks[n] = track if finished? track
+          tracks[n] = track if Ipod::Track.new(track.merge(ipod_root: @ipod_root)).finished?
         end
       end
     end
