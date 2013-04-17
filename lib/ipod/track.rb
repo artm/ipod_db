@@ -16,7 +16,7 @@ module Ipod
     end
 
     def finished?
-      playcount > 0 or progress > FinishedProgress
+      (playcount and playcount > 0) or progress > FinishedProgress
     end
 
     def progress
