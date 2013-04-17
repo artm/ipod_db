@@ -28,7 +28,7 @@ module Ipod
     end
 
     def length
-      #
+      return @length if @length
       # if file is writable TagLib opens it read-write and appears to write something when the file
       # gets closed, or in any case closing a file open read-write is slow on slow media.
       #
@@ -37,7 +37,7 @@ module Ipod
       old_stat = File::Stat.new(absolute_path)
       begin
         FileUtils.chmod('a-w', absolute_path)
-        TagLib::FileRef.open(absolute_path){|file| file.audio_properties.length}
+        return @length = TagLib::FileRef.open(absolute_path){|file| file.audio_properties.length}
       ensure
         FileUtils.chmod(old_stat.mode, absolute_path)
       end

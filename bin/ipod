@@ -116,7 +116,7 @@ Main {
 
   def ls
     @ipod_db.each_track_with_index do |track,i|
-      list_track i, Ipod::Track.new(track.merge(ipod_root: @ipod_root))
+      list_track i, wrapped_track(track)
     end
   end
 
@@ -224,11 +224,16 @@ Main {
         end
       when 'done'
         @ipod_db.each_track_with_index do |track,n|
-          tracks[n] = track if Ipod::Track.new(track.merge(ipod_root: @ipod_root)).finished?
+          tracks[n] = track if wrapped_track(track).finished?
         end
       end
     end
     tracks
+  end
+
+  def wrapped_track record
+    @wrapped_tracks ||= Map.new
+    @wrapped_tracks[record[:filename]] ||= Ipod::Track.new( record.merge(ipod_root: @ipod_root) )
   end
 
   def spread paths, group_lambda = lambda {|path| track_group(path)}
