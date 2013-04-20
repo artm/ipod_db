@@ -24,7 +24,7 @@ module Ipod
     end
 
     def pos
-      Track.ticks_to_sec(bookmarktime)
+      Track.ticks_to_sec(bookmarktime || 0.0)
     end
 
     def length

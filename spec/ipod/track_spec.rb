@@ -53,6 +53,11 @@ describe Ipod::Track do
       assert_in_delta track.pos, Ipod::Track::SecondsPerTick
     end
 
+    it 'defaults to 0' do
+      track = Ipod::Track.new
+      assert_equal track.pos, 0
+    end
+
   end
 
   describe '#progress' do
