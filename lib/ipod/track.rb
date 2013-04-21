@@ -1,6 +1,7 @@
 require 'ostruct'
 require 'taglib'
 require 'fileutils'
+require 'active_support/core_ext/kernel/reporting'
 
 module Ipod
   class Track < OpenStruct
@@ -37,7 +38,9 @@ module Ipod
       old_stat = File::Stat.new(absolute_path)
       begin
         FileUtils.chmod('a-w', absolute_path)
-        return @length = TagLib::FileRef.open(absolute_path){|file| file.audio_properties.length}
+        quietly {
+          return @length = TagLib::FileRef.open(absolute_path){|file| file.audio_properties.length}
+        }
       ensure
         FileUtils.chmod(old_stat.mode, absolute_path)
       end
