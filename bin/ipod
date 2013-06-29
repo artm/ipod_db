@@ -281,4 +281,6 @@ BEGIN {
   require 'ipod/track'
   require 'pretty'
   require 'spread'
+  require 'fuzzy_locale'
+  I18n.locale = :fuzzy
 }
