@@ -170,8 +170,14 @@ Main {
       end
     end
     rename_us.reverse_each do |from,to|
-      info "renaming #{from} to #{to}"
-      File.rename from, to
+      if Dir.exists? to
+        info "moving #{from}/* to #{to}/"
+        FileUtils.mv Dir["#{from}/*"], to
+        FileUtils.rm_rf from
+      else
+        info "renaming #{from} to #{to}"
+        File.rename from, to
+      end
     end
   end
 
