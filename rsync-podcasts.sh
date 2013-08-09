@@ -19,4 +19,4 @@ find $SRC -name '*.mp3' -printf '%TY-%Tm-%Td\t%k\t%P\n' | sort | cut -f 2,3 | wh
 done > $LIST
 
 rsync $RSYNC_OPTS $SRC/ $DST/ --files-from=$LIST
-
+ipod sync
